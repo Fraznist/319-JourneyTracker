@@ -16,4 +16,7 @@
     <string name="main_manage_journeys">"Manage Journeys"</string>
     <string name="main_start_journey">"Start Journey!"</string>
     <string name="main_view_journeys">"View Journeys"</string>
+    <string name="title_activity_login2">Sign in</string>
+    <string name="title_activity_start_journey">Map</string>
+    <string name="title_activity_journals">JournalsActivity</string>
 </resources>
