@@ -1,5 +1,6 @@
 package com.example.eakgun14.journeytracker;
 
+import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 
@@ -9,5 +10,7 @@ public class ViewJourneysActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_view_journeys);
+
+        Intent intent = getIntent();
     }
 }

@@ -45,6 +45,7 @@
 
         <activity
             android:name=".StartJourneyActivity"
+            android:parentActivityName=".MainActivity"
             android:label="@string/title_activity_start_journey">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
@@ -59,7 +60,8 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.example.eakgun14.journeytracker.MainActivity" />
         </activity>
-        <activity android:name=".ViewJourneysActivity"></activity>
+        <activity android:name=".ViewJourneysActivity"
+            android:parentActivityName=".MainActivity"></activity>
     </application>
 
 </manifest>

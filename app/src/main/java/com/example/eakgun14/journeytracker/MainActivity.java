@@ -25,7 +25,7 @@ public class MainActivity extends AppCompatActivity {
         });
 
         Button startJourneyButton = (Button) findViewById(R.id.start_journey);
-        manageJourneysButton.setOnClickListener(new View.OnClickListener() {
+        startJourneyButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 Intent intent = new Intent(MainActivity.this, StartJourneyActivity.class);
@@ -33,7 +33,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        Button viewJourneysButton = (Button) findViewById(R.id.manage_journey);
+        Button viewJourneysButton = (Button) findViewById(R.id.view_journeys);
         viewJourneysButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
