@@ -1,5 +1,7 @@
 package com.example.eakgun14.journeytracker.Activities;
 
+import android.arch.persistence.room.Database;
+import android.arch.persistence.room.Room;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
@@ -17,13 +19,14 @@ import java.util.List;
 import com.example.eakgun14.journeytracker.Adapters.JournalAdapter;
 import com.example.eakgun14.journeytracker.DataTypes.Journal;
 import com.example.eakgun14.journeytracker.DataTypes.Journey;
+import com.example.eakgun14.journeytracker.LocalDatabase.AppDatabase;
 import com.example.eakgun14.journeytracker.R;
 
 public class JournalsActivity extends AppCompatActivity {
 
+    AppDatabase db;
+
     private List<Journal> journals;
-    private Journal allJourneys;
-    private Journal defaultJourneys;
 
     private RecyclerView recyclerView;
     private JournalAdapter adapter;
@@ -39,23 +42,21 @@ public class JournalsActivity extends AppCompatActivity {
         ActionBar actBar = getSupportActionBar();
         actBar.setDisplayHomeAsUpEnabled(true);
 
-        journals = new ArrayList<Journal>();
-        allJourneys = new Journal("All Journeys");
-        defaultJourneys = new Journal("Default Journeys");
+        db = Room.databaseBuilder(getApplicationContext(), AppDatabase.class, "production")
+                .allowMainThreadQueries()
+                .build();
 
-        for (int i = 0; i < 3; i++)
-            allJourneys.addJourney(new Journey("Journey no: " + i, "dummy desc"));
+        journals = db.journalDao().getAllJournals();
 
         recyclerView = findViewById(R.id.recyclerView);
         recyclerView.setHasFixedSize(true);
-
         layoutMgr = new LinearLayoutManager(this);
-        adapter = new JournalAdapter(journals, this.getApplicationContext());
+        adapter = new JournalAdapter(journals, this, db);
         recyclerView.setLayoutManager(layoutMgr);
         recyclerView.setAdapter(adapter);
 
-        FloatingActionButton addJourneyButton = findViewById(R.id.add_journal_button);
-        addJourneyButton.setOnClickListener(new View.OnClickListener() {
+        FloatingActionButton addJournalButton = findViewById(R.id.add_journal_button);
+        addJournalButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 adapter.add(adapter.getItemCount(), new Journal("saqurula"));
@@ -66,15 +67,7 @@ public class JournalsActivity extends AppCompatActivity {
         allJourneyField.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                startJourniesActivity(allJourneys);
-            }
-        });
-
-        TextView defaultJourneyField = findViewById(R.id.default_journals_text);
-        defaultJourneyField.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startJourniesActivity(defaultJourneys);
+                startAllJourniesActivity();
             }
         });
 
@@ -87,9 +80,18 @@ public class JournalsActivity extends AppCompatActivity {
         });
     }
 
-    public void startJourniesActivity(Journal toInspect) {
+    public void startJourniesActivity(Journal j) {
+        int journalID = j.getId();
+        String journalName = j.getName();
         Intent intent = new Intent(JournalsActivity.this, JourniesActivity.class);
-        intent.putExtra("Journal", toInspect);
+        intent.putExtra("Journal", journalID);
+        intent.putExtra("Name", journalName);
+        startActivity(intent);
+    }
+
+    public void startAllJourniesActivity() {
+        Intent intent = new Intent(JournalsActivity.this, JourniesActivity.class);
+        intent.putExtra("Special", -1);
         startActivity(intent);
     }
 }

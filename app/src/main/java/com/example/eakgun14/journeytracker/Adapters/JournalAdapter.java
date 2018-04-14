@@ -13,24 +13,31 @@ import android.view.View.OnClickListener;
 
 import com.example.eakgun14.journeytracker.Activities.JournalsActivity;
 import com.example.eakgun14.journeytracker.DataTypes.Journal;
+import com.example.eakgun14.journeytracker.LocalDatabase.AppDatabase;
 import com.example.eakgun14.journeytracker.R;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class JournalAdapter extends RecyclerView.Adapter<JournalAdapter.ViewHolder> {
+    private AppDatabase db;
+
     private List<Journal> journals;
     private List<Journal> selectedJournals;
-    private Context mContext;
+    private JournalsActivity jact;
 
-    public JournalAdapter(List<Journal> jjs, Context ct) {
+    public JournalAdapter(List<Journal> jjs, JournalsActivity ja, AppDatabase database) {
         journals = jjs;
         selectedJournals = new ArrayList<Journal>();
-        mContext = ct;
+        jact = ja;
+        this.db = database;
     }
 
     public void add(int position, Journal item) {
         journals.add(position, item);
+        if (item == null)
+            Log.d("debug", "NULL");
+        db.journalDao().insertAll(item);
         notifyItemInserted(position);
     }
 
@@ -39,10 +46,12 @@ public class JournalAdapter extends RecyclerView.Adapter<JournalAdapter.ViewHold
             int i = journals.indexOf(j);
             remove(i);
         }
+        selectedJournals.clear();
     }
 
     public void remove(int position) {
-        journals.remove(position);
+        Journal j = journals.remove(position);
+        db.journalDao().deleteAll(j);
         notifyItemRemoved(position);
     }
 
@@ -67,9 +76,7 @@ public class JournalAdapter extends RecyclerView.Adapter<JournalAdapter.ViewHold
         holder.name.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(mContext instanceof JournalsActivity){
-                    ((JournalsActivity)mContext).startJourniesActivity(j);
-                }
+                jact.startJourniesActivity(j);
             }
         });
         holder.selected.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {

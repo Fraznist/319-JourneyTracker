@@ -1,5 +1,8 @@
 package com.example.eakgun14.journeytracker.DataTypes;
 
+import android.arch.persistence.room.ColumnInfo;
+import android.arch.persistence.room.Entity;
+import android.arch.persistence.room.PrimaryKey;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.util.Log;
@@ -8,44 +11,37 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+@Entity
 public class Journal implements Parcelable{
-    private String name;
-    private List<Journey> journeyList;
+    @PrimaryKey(autoGenerate = true)
+    private int id;
 
-    public Journal(String n) {
-        name = n;
-        journeyList = new ArrayList<Journey>();
+    @ColumnInfo(name = "name")
+    private String name;
+
+    public Journal(String name) {
+        this.name = name;
     }
 
     // Required constructor for Parcelable interface, never really used in source code.
     public Journal(Parcel in) {
         name = in.readString();
-        journeyList = in.readArrayList(Journey.class.getClassLoader());
-    }
-
-    public void addJourney(Journey j) {
-        journeyList.add(j);
-    }
-
-    public void addAllJourneys(Collection<Journey> jCol) {
-        for (Journey j : jCol)
-            journeyList.add(j);
     }
 
     public String getName() {
         return name;
     }
 
-    public List<Journey> getJourneyList() {
-        return journeyList;
+    public int getId() {
+        return id;
     }
 
     public void setName(String name) {
         this.name = name;
     }
 
-    public String toString() {
-        return journeyList.toString();
+    public void setId(int id) {
+        this.id = id;
     }
 
     // Dummy implementations for Parcelable interface
@@ -57,7 +53,6 @@ public class Journal implements Parcelable{
     @Override
     public void writeToParcel(Parcel parcel, int i) {
         parcel.writeString(name);
-        parcel.writeList(journeyList);
     }
 
     public static final Parcelable.Creator<Journal> CREATOR = new Parcelable.Creator<Journal>() {

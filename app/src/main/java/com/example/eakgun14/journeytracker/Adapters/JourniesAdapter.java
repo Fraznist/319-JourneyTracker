@@ -13,6 +13,7 @@ import android.view.View.OnClickListener;
 
 import com.example.eakgun14.journeytracker.DataTypes.Journal;
 import com.example.eakgun14.journeytracker.DataTypes.Journey;
+import com.example.eakgun14.journeytracker.LocalDatabase.AppDatabase;
 import com.example.eakgun14.journeytracker.R;
 
 import java.util.ArrayList;
@@ -22,20 +23,24 @@ public class JourniesAdapter extends RecyclerView.Adapter<JourniesAdapter.ViewHo
     private List<Journey> journies;
     private List<Journey> selectedJournies;
     private Context mContext;
+    private AppDatabase db;
 
-    public JourniesAdapter(List<Journey> jjs, Context ct) {
+    public JourniesAdapter(List<Journey> jjs, Context ct, AppDatabase database) {
         journies = jjs;
         selectedJournies = new ArrayList<Journey>();
         mContext = ct;
+        db = database;
     }
 
     public void add(int position, Journey item) {
         journies.add(position, item);
+        db.journeyDao().insertAll(item);
         notifyItemInserted(position);
     }
 
     public void remove(int position) {
-        journies.remove(position);
+        Journey j =  journies.remove(position);
+        db.journeyDao().deleteAll(j);
         notifyItemRemoved(position);
     }
 
@@ -44,6 +49,7 @@ public class JourniesAdapter extends RecyclerView.Adapter<JourniesAdapter.ViewHo
             int i = journies.indexOf(j);
             remove(i);
         }
+        selectedJournies.clear();
     }
 
     // Create new views (invoked by the layout manager)
@@ -77,7 +83,6 @@ public class JourniesAdapter extends RecyclerView.Adapter<JourniesAdapter.ViewHo
                     selectedJournies.add(j);
                 else
                     selectedJournies.remove(j);
-                Log.d("debug", "Currently selected: " + selectedJournies);
             }
         });
     }

@@ -1,26 +1,37 @@
 package com.example.eakgun14.journeytracker.DataTypes;
 
+import android.arch.persistence.room.ColumnInfo;
+import android.arch.persistence.room.Entity;
+import android.arch.persistence.room.PrimaryKey;
 import android.os.Parcel;
 import android.os.Parcelable;
 
 import java.util.Date;
 import java.text.SimpleDateFormat;
 
+@Entity
 public class Journey implements Parcelable{
-    private static final SimpleDateFormat form = new SimpleDateFormat("yyyy-MM-dd");
+
+    @PrimaryKey(autoGenerate = true)
+    private int id;
+
+    @ColumnInfo(name = "journal_id")
+    private int journal_id;
+
+    @ColumnInfo(name = "name")
     private String name;
-    private Date createdOn;
+
+    @ColumnInfo(name = "description")
     private String description;
 
-    public Journey(String n, String d) {
-        name = n;
-        createdOn = new Date();
-        description = d;
+    public Journey(String name, String description, int journal_id) {
+        this.name = name;
+        this.description = description;
+        this.journal_id = journal_id;
     }
 
     public Journey(Parcel in) {
         name = in.readString();
-        createdOn = (Date) in.readValue(Date.class.getClassLoader());
         description = in.readString();
     }
 
@@ -28,12 +39,16 @@ public class Journey implements Parcelable{
         return name;
     }
 
-    public Date getCreatedOn() {
-        return createdOn;
-    }
-
     public String getDescription() {
         return description;
+    }
+
+    public int getJournal_id() {
+        return journal_id;
+    }
+
+    public void setJournal_id(int journal_id) {
+        this.journal_id = journal_id;
     }
 
     public void setName(String name) {
@@ -57,7 +72,6 @@ public class Journey implements Parcelable{
     @Override
     public void writeToParcel(Parcel parcel, int i) {
         parcel.writeString(name);
-        parcel.writeValue(createdOn);
         parcel.writeString(description);
     }
 
@@ -71,4 +85,12 @@ public class Journey implements Parcelable{
             return new Journey[size];
         }
     };
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
 }
