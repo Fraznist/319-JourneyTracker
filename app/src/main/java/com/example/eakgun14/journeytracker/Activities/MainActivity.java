@@ -1,15 +1,19 @@
-package com.example.eakgun14.journeytracker;
+package com.example.eakgun14.journeytracker.Activities;
 
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
+
+import com.example.eakgun14.journeytracker.R;
 
 public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
@@ -29,15 +33,6 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 Intent intent = new Intent(MainActivity.this, StartJourneyActivity.class);
-                startActivity(intent);
-            }
-        });
-
-        Button viewJourneysButton = (Button) findViewById(R.id.view_journeys);
-        viewJourneysButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent intent = new Intent(MainActivity.this, ViewJourneysActivity.class);
                 startActivity(intent);
             }
         });
