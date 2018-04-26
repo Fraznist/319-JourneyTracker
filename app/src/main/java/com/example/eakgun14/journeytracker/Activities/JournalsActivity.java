@@ -1,6 +1,5 @@
 package com.example.eakgun14.journeytracker.Activities;
 
-import android.arch.persistence.room.Database;
 import android.arch.persistence.room.Room;
 import android.content.Intent;
 import android.os.Bundle;
@@ -13,23 +12,23 @@ import android.view.View;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Arrays;
 
-import com.example.eakgun14.journeytracker.Adapters.JournalAdapter;
+import com.example.eakgun14.journeytracker.Adapters.JournableAdapter;
 import com.example.eakgun14.journeytracker.DataTypes.Journal;
-import com.example.eakgun14.journeytracker.DataTypes.Journey;
+import com.example.eakgun14.journeytracker.DataTypes.listActivity;
 import com.example.eakgun14.journeytracker.LocalDatabase.AppDatabase;
 import com.example.eakgun14.journeytracker.R;
 
-public class JournalsActivity extends AppCompatActivity {
+public class JournalsActivity extends AppCompatActivity implements listActivity {
 
     AppDatabase db;
+    private int debug = 0;
 
-    private List<Journal> journals;
+    private Journal[] journals;
 
     private RecyclerView recyclerView;
-    private JournalAdapter adapter;
+    private JournableAdapter adapter;
     private RecyclerView.LayoutManager layoutMgr;
 
     @Override
@@ -46,12 +45,13 @@ public class JournalsActivity extends AppCompatActivity {
                 .allowMainThreadQueries()
                 .build();
 
-        journals = db.journalDao().getAllJournals();
+        Object[] temp = db.journalDao().getAllJournals().toArray();
+        journals = Arrays.copyOf(temp, temp.length, Journal[].class);
 
         recyclerView = findViewById(R.id.recyclerView);
         recyclerView.setHasFixedSize(true);
         layoutMgr = new LinearLayoutManager(this);
-        adapter = new JournalAdapter(journals, this, db);
+        adapter = new JournableAdapter(journals, this);
         recyclerView.setLayoutManager(layoutMgr);
         recyclerView.setAdapter(adapter);
 
@@ -59,7 +59,8 @@ public class JournalsActivity extends AppCompatActivity {
         addJournalButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                adapter.add(adapter.getItemCount(), new Journal("saqurula"));
+                adapter.add(adapter.getItemCount(), new Journal("saqurula" + debug));
+                debug++;
             }
         });
 
@@ -80,18 +81,36 @@ public class JournalsActivity extends AppCompatActivity {
         });
     }
 
-    public void startJourniesActivity(Journal j) {
-        int journalID = j.getId();
-        String journalName = j.getName();
-        Intent intent = new Intent(JournalsActivity.this, JourniesActivity.class);
-        intent.putExtra("Journal", journalID);
-        intent.putExtra("Name", journalName);
-        startActivity(intent);
+    @Override
+    protected void onStop() {
+        super.onStop();
+        updateJournalDatabase();;
+    }
+
+    public void updateJournalDatabase() {
+        Object[] temp = adapter.getJournablesToAdd().toArray();
+        db.journalDao().insertAll(Arrays.copyOf(temp, temp.length, Journal[].class));
+
+        temp = adapter.getJournablesToDelete().toArray();
+        Journal[] jays = Arrays.copyOf(temp, temp.length, Journal[].class);
+
+        db.journalDao().deleteAll(jays);
     }
 
     public void startAllJourniesActivity() {
         Intent intent = new Intent(JournalsActivity.this, JourniesActivity.class);
         intent.putExtra("Special", -1);
+        startActivity(intent);
+    }
+
+    @Override
+    public void startActivity(Object o) {
+        Journal j = (Journal)o;
+        int journalID = j.getId();
+        String journalName = j.getName();
+        Intent intent = new Intent(JournalsActivity.this, JourniesActivity.class);
+        intent.putExtra("Journal", journalID);
+        intent.putExtra("Name", journalName);
         startActivity(intent);
     }
 }

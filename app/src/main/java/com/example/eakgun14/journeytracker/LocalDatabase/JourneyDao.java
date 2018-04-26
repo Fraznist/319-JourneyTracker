@@ -5,6 +5,7 @@ import android.arch.persistence.room.Delete;
 import android.arch.persistence.room.Insert;
 import android.arch.persistence.room.Query;
 
+import com.example.eakgun14.journeytracker.DataTypes.Journable;
 import com.example.eakgun14.journeytracker.DataTypes.Journey;
 
 import java.util.List;
@@ -17,6 +18,9 @@ public interface JourneyDao {
 
     @Query("SELECT * FROM journey WHERE journal_id IS :j_id")
     List<Journey> getAllJourneysInJournal(int j_id);
+
+    @Query("UPDATE journey SET journal_id = -1 WHERE journal_id IS :j_id")
+    void orphanAllJourneysInJournal(int j_id);
 
     @Insert
     void insertAll(Journey... journeys);

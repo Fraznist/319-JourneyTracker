@@ -2,21 +2,23 @@ package com.example.eakgun14.journeytracker.DataTypes;
 
 import android.arch.persistence.room.ColumnInfo;
 import android.arch.persistence.room.Entity;
+import android.arch.persistence.room.ForeignKey;
 import android.arch.persistence.room.PrimaryKey;
-import android.os.Parcel;
-import android.os.Parcelable;
 
-import java.util.Date;
-import java.text.SimpleDateFormat;
+import static android.arch.persistence.room.ForeignKey.SET_DEFAULT;
+import static android.arch.persistence.room.ForeignKey.SET_NULL;
 
-@Entity
-public class Journey implements Parcelable{
+@Entity(foreignKeys = @ForeignKey(entity = Journal.class,
+                                    parentColumns = "id",
+                                    childColumns = "journal_id",
+                                    onDelete = SET_NULL))
+public class Journey implements Journable {
 
     @PrimaryKey(autoGenerate = true)
-    private int id;
+    private Integer id;
 
     @ColumnInfo(name = "journal_id")
-    private int journal_id;
+    private Integer journal_id;
 
     @ColumnInfo(name = "name")
     private String name;
@@ -24,15 +26,10 @@ public class Journey implements Parcelable{
     @ColumnInfo(name = "description")
     private String description;
 
-    public Journey(String name, String description, int journal_id) {
+    public Journey(String name, String description, Integer journal_id) {
         this.name = name;
         this.description = description;
         this.journal_id = journal_id;
-    }
-
-    public Journey(Parcel in) {
-        name = in.readString();
-        description = in.readString();
     }
 
     public String getName() {
@@ -43,11 +40,11 @@ public class Journey implements Parcelable{
         return description;
     }
 
-    public int getJournal_id() {
+    public Integer getJournal_id() {
         return journal_id;
     }
 
-    public void setJournal_id(int journal_id) {
+    public void setJournal_id(Integer journal_id) {
         this.journal_id = journal_id;
     }
 
@@ -60,37 +57,14 @@ public class Journey implements Parcelable{
     }
 
     public String toString() {
-        return name;
+        return "id: " + id + ", journal_id: " + journal_id + ", name: " + name;
     }
 
-    // Dummy implementations for Parcelable interface
-    @Override
-    public int describeContents() {
-        return 0;
-    }
-
-    @Override
-    public void writeToParcel(Parcel parcel, int i) {
-        parcel.writeString(name);
-        parcel.writeString(description);
-    }
-
-    public static final Parcelable.Creator<Journey> CREATOR = new Parcelable.Creator<Journey>() {
-
-        public Journey createFromParcel(Parcel in) {
-            return new Journey(in);
-        }
-
-        public Journey[] newArray(int size) {
-            return new Journey[size];
-        }
-    };
-
-    public int getId() {
+    public Integer getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(Integer id) {
         this.id = id;
     }
 }

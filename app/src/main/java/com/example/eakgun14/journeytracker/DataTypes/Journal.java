@@ -12,9 +12,9 @@ import java.util.Collection;
 import java.util.List;
 
 @Entity
-public class Journal implements Parcelable{
+public class Journal implements Journable{
     @PrimaryKey(autoGenerate = true)
-    private int id;
+    private Integer id;
 
     @ColumnInfo(name = "name")
     private String name;
@@ -23,16 +23,11 @@ public class Journal implements Parcelable{
         this.name = name;
     }
 
-    // Required constructor for Parcelable interface, never really used in source code.
-    public Journal(Parcel in) {
-        name = in.readString();
-    }
-
     public String getName() {
         return name;
     }
 
-    public int getId() {
+    public Integer getId() {
         return id;
     }
 
@@ -40,29 +35,12 @@ public class Journal implements Parcelable{
         this.name = name;
     }
 
-    public void setId(int id) {
+    public void setId(Integer id) {
         this.id = id;
     }
 
-    // Dummy implementations for Parcelable interface
-    @Override
-    public int describeContents() {
-        return 0;
+    public String toString() {
+        return "id: " + this.getId() + " name: " + this.getName();
     }
 
-    @Override
-    public void writeToParcel(Parcel parcel, int i) {
-        parcel.writeString(name);
-    }
-
-    public static final Parcelable.Creator<Journal> CREATOR = new Parcelable.Creator<Journal>() {
-
-        public Journal createFromParcel(Parcel in) {
-            return new Journal(in);
-        }
-
-        public Journal[] newArray(int size) {
-            return new Journal[size];
-        }
-    };
 }

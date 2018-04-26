@@ -7,31 +7,30 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.TextView;
+import android.widget.Toast;
 
-import com.example.eakgun14.journeytracker.Adapters.JournalAdapter;
-import com.example.eakgun14.journeytracker.Adapters.JourniesAdapter;
-import com.example.eakgun14.journeytracker.DataTypes.Journal;
+import com.example.eakgun14.journeytracker.Adapters.JournableAdapter;
+import com.example.eakgun14.journeytracker.DataTypes.Journable;
 import com.example.eakgun14.journeytracker.DataTypes.Journey;
+import com.example.eakgun14.journeytracker.DataTypes.listActivity;
 import com.example.eakgun14.journeytracker.LocalDatabase.AppDatabase;
 import com.example.eakgun14.journeytracker.R;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Arrays;
 
-public class JourniesActivity extends AppCompatActivity {
+public class JourniesActivity extends AppCompatActivity implements listActivity {
 
     AppDatabase db;
 
-    List<Journey> journies;
+    Journable[] journies;
     int journalID;
     String journalName;
 
     private RecyclerView recyclerView;
-    private JourniesAdapter adapter;
+    private JournableAdapter adapter;
     private RecyclerView.LayoutManager layoutMgr;
 
     @Override
@@ -59,16 +58,21 @@ public class JourniesActivity extends AppCompatActivity {
                 .allowMainThreadQueries()
                 .build();
 
-        if (journalID == 0)
-            journies = db.journeyDao().getAllJourneys();
-        else
-            journies = db.journeyDao().getAllJourneysInJournal(journalID);
+        if (journalID == 0) {
+            Object[] temp = db.journeyDao().getAllJourneys().toArray();
+            journies = Arrays.copyOf(temp, temp.length, Journey[].class);
+        }
+        else {
+            Object[] temp = db.journeyDao().getAllJourneysInJournal(journalID).toArray();
+            journies = Arrays.copyOf(temp, temp.length, Journey[].class);
+        }
+
 
         recyclerView = findViewById(R.id.journies_recycler_view);
         recyclerView.setHasFixedSize(true);
 
         layoutMgr = new LinearLayoutManager(this);
-        adapter = new JourniesAdapter(journies, this.getApplicationContext(), db);
+        adapter = new JournableAdapter(journies, this);
         recyclerView.setLayoutManager(layoutMgr);
         recyclerView.setAdapter(adapter);
 
@@ -90,5 +94,25 @@ public class JourniesActivity extends AppCompatActivity {
 
         TextView title = findViewById(R.id.journey_title);
         title.setText(journalName);
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        updateJourniesDatabase();;
+    }
+
+    public void updateJourniesDatabase() {
+        Object[] temp = adapter.getJournablesToAdd().toArray();
+        db.journeyDao().insertAll(Arrays.copyOf(temp, temp.length, Journey[].class));
+
+        temp = adapter.getJournablesToDelete().toArray();
+        db.journeyDao().deleteAll(Arrays.copyOf(temp, temp.length, Journey[].class));
+    }
+
+    @Override
+    public void startActivity(Object o) {
+        Journey j = (Journey) o;
+        Toast.makeText(this, j.toString(), Toast.LENGTH_SHORT).show();
     }
 }

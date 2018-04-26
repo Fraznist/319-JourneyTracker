@@ -2,49 +2,31 @@
 <android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/linearLayout2"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/login_background"
-    android:gravity="center_horizontal"
-    tools:context=".Activities.MainActivity">
+    tools:context=".Activities.SettingsActivity">
 
     <Button
-        android:id="@+id/manage_journey"
+        android:id="@+id/english_language"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="96dp"
-        android:background="@drawable/buttonshape"
-        android:gravity="center"
-        android:text="@string/main_manage_journeys"
-        android:textColor="#FFFFFF"
-        android:textSize="20dp"
-        app:layout_constraintBottom_toTopOf="@+id/start_journey"
-        app:layout_constraintEnd_toEndOf="@+id/start_journey"
-        app:layout_constraintStart_toStartOf="@+id/start_journey" />
-
-    <Button
-        android:id="@+id/start_journey"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="8dp"
         android:layout_marginEnd="8dp"
         android:layout_marginLeft="8dp"
         android:layout_marginRight="8dp"
         android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
+        android:layout_marginTop="112dp"
         android:background="@drawable/buttonshape"
         android:gravity="center"
-        android:text="@string/main_start_journey"
+        android:text="@string/settings_english"
         android:textColor="#FFFFFF"
         android:textSize="20dp"
-        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
     <Button
-        android:id="@+id/settings"
+        android:id="@+id/turkish_language"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="8dp"
@@ -55,12 +37,12 @@
         android:layout_marginTop="8dp"
         android:background="@drawable/buttonshape"
         android:gravity="center"
-        android:text="@string/main_settings"
+        android:text="@string/settings_turkish"
         android:textColor="#FFFFFF"
         android:textSize="20dp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/start_journey" />
+        app:layout_constraintEnd_toEndOf="@+id/english_language"
+        app:layout_constraintStart_toStartOf="@+id/english_language"
+        app:layout_constraintTop_toBottomOf="@+id/english_language" />
 
 </android.support.constraint.ConstraintLayout>

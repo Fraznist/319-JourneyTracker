@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Journey Tracker</string>
+
+    <!-- Strings related to login -->
+    <string name="prompt_email">Email</string>
+    <string name="prompt_password">Şifre</string>
+    <string name="action_sign_in">Giriş</string>
+    <string name="action_register">Kaydol</string>
+    <string name="error_invalid_email">Email adresi hatalı</string>
+    <string name="error_invalid_password">Şifre çok kısa</string>
+    <string name="error_incorrect_password">Şifre hatalı</string>
+    <string name="error_field_required">Doldurulması gerekli</string>
+    <string name="permission_rationale">"Email tamamlama hizmeti için kontakt izni gerekli."
+    </string>
+    <string name="main_manage_journeys">"Seyahat Düzenle"</string>
+    <string name="main_start_journey">"Seyahate Başla!"</string>
+    <string name="main_settings">"Ayarlar"</string>
+    <string name="settings_english">"English"</string>
+    <string name="settings_turkish">"Türkçe"</string>
+    <string name="title_activity_login2">Giriş</string>
+    <string name="title_activity_start_journey">Harita</string>
+    <string name="journal_page_title">Seyahatler</string>
+    <string name="all_journeys_name">Bütün Seyahatler</string>
+    <string name="title_activity_journals">BOŞ YAPMA</string>
+    <string name="default_journeys_name">Varsayılan</string>
+    <string name="start_journey">Seyahate Başla</string>
+    <string name="finish_journey">Seyahati Bitir</string>
+    <string name="journey_dialog_title">Seyahati Kaydet</string>
+    <string name="journey_dialog_save">Kaydet</string>
+    <string name="journey_dialog_namefield">İsim</string>
+    <string name="journey_dialog_descfield">Açıklama</string>
+</resources>
