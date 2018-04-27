@@ -30,4 +30,6 @@
     <string name="journey_dialog_save">Save</string>
     <string name="journey_dialog_namefield">Name</string>
     <string name="journey_dialog_descfield">Description</string>
+    <string name="dialog_show_journey_on_map">View On Map</string>
+    <string name="dialog_create_journal">New Journal</string>
 </resources>

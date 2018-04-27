@@ -2,7 +2,7 @@
 <android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/constraintLayout"
+    android:id="@+id/manage_journal_constraint_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".Activities.JournalsActivity">
@@ -11,7 +11,7 @@
         android:id="@+id/journal_toolbar"
         android:layout_width="0dp"
         android:layout_height="50dp"
-        android:background="?attr/colorPrimary"
+        android:background="@color/colorPrimary"
         android:minHeight="?attr/actionBarSize"
         android:theme="?attr/actionBarTheme"
         app:layout_constraintEnd_toEndOf="parent"
@@ -20,7 +20,8 @@
 
         <android.support.constraint.ConstraintLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:layout_height="match_parent"
+            tools:layout_editor_absoluteX="16dp">
 
             <TextView
                 android:id="@+id/journal_title_view"
@@ -88,7 +89,7 @@
         android:clickable="true"
         android:src="@android:drawable/ic_menu_add"
         android:visibility="visible"
-        app:backgroundTint="@android:color/holo_blue_bright"
+        app:backgroundTint="@color/colorAccent"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 

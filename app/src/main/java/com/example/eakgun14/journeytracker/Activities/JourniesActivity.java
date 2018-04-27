@@ -2,28 +2,37 @@ package com.example.eakgun14.journeytracker.Activities;
 
 import android.arch.persistence.room.Room;
 import android.content.Intent;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.support.v4.app.DialogFragment;
+import android.support.v4.app.FragmentManager;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.example.eakgun14.journeytracker.Adapters.JournableAdapter;
+import com.example.eakgun14.journeytracker.Adapters.LightManagerAdapter;
 import com.example.eakgun14.journeytracker.DataTypes.Journable;
 import com.example.eakgun14.journeytracker.DataTypes.Journey;
 import com.example.eakgun14.journeytracker.DataTypes.listActivity;
+import com.example.eakgun14.journeytracker.Dialogs.ViewJourneyDialogFragment;
 import com.example.eakgun14.journeytracker.LocalDatabase.AppDatabase;
 import com.example.eakgun14.journeytracker.R;
 
 import java.util.Arrays;
 
-public class JourniesActivity extends AppCompatActivity implements listActivity {
+public class JourniesActivity extends AppCompatActivity implements listActivity, SensorEventListener {
 
     AppDatabase db;
+
+    private LightManagerAdapter lightManager;
 
     Journable[] journies;
     int journalID;
@@ -37,6 +46,9 @@ public class JourniesActivity extends AppCompatActivity implements listActivity 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_journies);
+
+        ViewGroup thisLayout = findViewById(R.id.manage_journeys_constraint_layout);
+        lightManager = new LightManagerAdapter(thisLayout, this);
 
         Intent intent = getIntent();
 
@@ -97,6 +109,29 @@ public class JourniesActivity extends AppCompatActivity implements listActivity 
     }
 
     @Override
+    protected void onPause() {
+        super.onPause();
+        lightManager.pause();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        lightManager.resume();
+    }
+
+    @Override
+    public void onSensorChanged(SensorEvent event) {
+        if (event.sensor.getType() == Sensor.TYPE_LIGHT)
+            lightManager.illuminationChanged(event);
+    }
+
+    @Override
+    public void onAccuracyChanged(Sensor sensor, int accuracy) {
+
+    }
+
+    @Override
     protected void onStop() {
         super.onStop();
         updateJourniesDatabase();;
@@ -113,6 +148,14 @@ public class JourniesActivity extends AppCompatActivity implements listActivity 
     @Override
     public void startActivity(Object o) {
         Journey j = (Journey) o;
-        Toast.makeText(this, j.toString(), Toast.LENGTH_SHORT).show();
+        FragmentManager fm = getSupportFragmentManager();
+        DialogFragment frag =  new ViewJourneyDialogFragment();
+
+        Bundle args = new Bundle();
+        args.putString("name", j.getName());
+        args.putString("description", j.getDescription());
+        frag.setArguments(args);
+
+        frag.show(fm, "fragment_view_journey_info");
     }
 }

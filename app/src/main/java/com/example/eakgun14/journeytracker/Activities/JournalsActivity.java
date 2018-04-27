@@ -2,28 +2,38 @@ package com.example.eakgun14.journeytracker.Activities;
 
 import android.arch.persistence.room.Room;
 import android.content.Intent;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v4.app.DialogFragment;
+import android.support.v4.app.FragmentManager;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
 import java.util.Arrays;
 
 import com.example.eakgun14.journeytracker.Adapters.JournableAdapter;
+import com.example.eakgun14.journeytracker.Adapters.LightManagerAdapter;
 import com.example.eakgun14.journeytracker.DataTypes.Journal;
 import com.example.eakgun14.journeytracker.DataTypes.listActivity;
+import com.example.eakgun14.journeytracker.Dialogs.CreateJournalDialogFragment;
+import com.example.eakgun14.journeytracker.Dialogs.NoticeDialogListener;
 import com.example.eakgun14.journeytracker.LocalDatabase.AppDatabase;
 import com.example.eakgun14.journeytracker.R;
 
-public class JournalsActivity extends AppCompatActivity implements listActivity {
+public class JournalsActivity extends AppCompatActivity implements listActivity, NoticeDialogListener, SensorEventListener {
 
     AppDatabase db;
-    private int debug = 0;
+
+    private LightManagerAdapter lightManager;
 
     private Journal[] journals;
 
@@ -36,13 +46,16 @@ public class JournalsActivity extends AppCompatActivity implements listActivity 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_journals);
 
+        ViewGroup thisLayout = findViewById(R.id.manage_journal_constraint_layout);
+        lightManager = new LightManagerAdapter(thisLayout, this);
+
         android.support.v7.widget.Toolbar bar = findViewById(R.id.journal_toolbar);
         setSupportActionBar(bar);
         ActionBar actBar = getSupportActionBar();
         actBar.setDisplayHomeAsUpEnabled(true);
 
         db = Room.databaseBuilder(getApplicationContext(), AppDatabase.class, "production")
-                .allowMainThreadQueries()
+                .allowMainThreadQueries().fallbackToDestructiveMigration()
                 .build();
 
         Object[] temp = db.journalDao().getAllJournals().toArray();
@@ -59,8 +72,10 @@ public class JournalsActivity extends AppCompatActivity implements listActivity 
         addJournalButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                adapter.add(adapter.getItemCount(), new Journal("saqurula" + debug));
-                debug++;
+                FragmentManager fm = getSupportFragmentManager();
+                DialogFragment frag =  new CreateJournalDialogFragment();
+
+                frag.show(fm, "fragment_create_journal");
             }
         });
 
@@ -79,6 +94,29 @@ public class JournalsActivity extends AppCompatActivity implements listActivity 
                 adapter.removeSelected();
             }
         });
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        lightManager.pause();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        lightManager.resume();
+    }
+
+    @Override
+    public void onSensorChanged(SensorEvent event) {
+        if (event.sensor.getType() == Sensor.TYPE_LIGHT)
+            lightManager.illuminationChanged(event);
+    }
+
+    @Override
+    public void onAccuracyChanged(Sensor sensor, int accuracy) {
+
     }
 
     @Override
@@ -106,11 +144,27 @@ public class JournalsActivity extends AppCompatActivity implements listActivity 
     @Override
     public void startActivity(Object o) {
         Journal j = (Journal)o;
-        int journalID = j.getId();
+        Integer journalID = j.getId();
         String journalName = j.getName();
         Intent intent = new Intent(JournalsActivity.this, JourniesActivity.class);
         intent.putExtra("Journal", journalID);
         intent.putExtra("Name", journalName);
         startActivity(intent);
+    }
+
+    @Override
+    public void onDialogClick(DialogFragment dialog) {
+
+        try {
+            CreateJournalDialogFragment dial = (CreateJournalDialogFragment) dialog;
+
+            String name = dial.getNameText().getText().toString();
+
+            adapter.add(adapter.getItemCount(), new Journal(name));
+        }
+        catch (ClassCastException e) {
+            throw new ClassCastException(dialog.toString()
+                    + " must extend CreateJournalDialogFragment");
+        }
     }
 }

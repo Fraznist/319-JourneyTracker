@@ -12,24 +12,13 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
-import android.widget.ListAdapter;
 import android.widget.Spinner;
-import android.widget.TextView;
 
-import com.example.eakgun14.journeytracker.DataTypes.Journal;
-import com.example.eakgun14.journeytracker.LocalDatabase.AppDatabase;
 import com.example.eakgun14.journeytracker.R;
 
-import org.w3c.dom.Text;
-
-import java.util.List;
+import java.util.ArrayList;
 
 public class NewJourneyDialogFragment extends DialogFragment {
-
-    public interface NoticeDialogListener {
-        public void onDialogClick(NewJourneyDialogFragment dialog);
-        public AppDatabase getAppDatabase();
-    }
 
     // Use this instance of the interface to deliver action events
     private NoticeDialogListener mListener;
@@ -37,7 +26,7 @@ public class NewJourneyDialogFragment extends DialogFragment {
     private EditText nameText;
     private EditText descText;
     private Spinner journalSpinner;
-    private AppDatabase db;
+    private ArrayList<Integer> ids;
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
@@ -45,17 +34,18 @@ public class NewJourneyDialogFragment extends DialogFragment {
 
         LayoutInflater inflater = getActivity().getLayoutInflater();
         View view = inflater.inflate(R.layout.dialog_save_journey, null);
-        nameText = view.findViewById(R.id.dialog_journey_save_name);
+        nameText = view.findViewById(R.id.dialog_create_journal_name);
         descText = view.findViewById(R.id.dialog_journey_save_description);
         journalSpinner = view.findViewById(R.id.dialog_save_journey_spinner);
 
-        db = mListener.getAppDatabase();
+        ArrayList<String> names = getArguments().getStringArrayList("journal names");
+        ids = getArguments().getIntegerArrayList("journal ids");
 
-        List<Journal> jjs = db.journalDao().getAllJournals();
-        jjs.add(0, new Journal("Don't Assing to any Journal"));
+        names.add(0, "Don't Assing to any Journal");
+        ids.add(0, -1);
 
-        ArrayAdapter<Journal> adapter = new ArrayAdapter<Journal>(
-                getActivity(), android.R.layout.simple_spinner_item, jjs);
+        ArrayAdapter<String> adapter = new ArrayAdapter<String>(
+                getActivity(), android.R.layout.simple_spinner_item, names);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         journalSpinner.setAdapter(adapter);
 
@@ -112,5 +102,14 @@ public class NewJourneyDialogFragment extends DialogFragment {
 
     public Spinner getSpinner() {
         return journalSpinner;
+    }
+
+    public ArrayList<Integer> getIds() {
+        return ids;
+    }
+
+    public Integer getSelectedJournalID() {
+        int pos = journalSpinner.getSelectedItemPosition();
+        return ids.get(pos);
     }
 }

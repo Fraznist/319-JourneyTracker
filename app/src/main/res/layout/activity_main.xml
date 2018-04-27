@@ -2,10 +2,9 @@
 <android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/linearLayout2"
+    android:id="@+id/main_constraint_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/login_background"
     android:gravity="center_horizontal"
     tools:context=".Activities.MainActivity">
 
@@ -13,54 +12,56 @@
         android:id="@+id/manage_journey"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="96dp"
         android:background="@drawable/buttonshape"
         android:gravity="center"
         android:text="@string/main_manage_journeys"
         android:textColor="#FFFFFF"
         android:textSize="20dp"
-        app:layout_constraintBottom_toTopOf="@+id/start_journey"
-        app:layout_constraintEnd_toEndOf="@+id/start_journey"
-        app:layout_constraintStart_toStartOf="@+id/start_journey" />
+        app:layout_constraintBottom_toTopOf="@+id/main_horizontal_guideline"
+        app:layout_constraintEnd_toStartOf="@+id/main_vertical_guideline"
+        app:layout_constraintStart_toStartOf="@+id/main_vertical_guideline"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <Button
         android:id="@+id/start_journey"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="8dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginLeft="8dp"
-        android:layout_marginRight="8dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
         android:background="@drawable/buttonshape"
         android:gravity="center"
         android:text="@string/main_start_journey"
         android:textColor="#FFFFFF"
         android:textSize="20dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintBottom_toTopOf="@+id/main_horizontal_guideline"
+        app:layout_constraintEnd_toStartOf="@+id/main_vertical_guideline"
+        app:layout_constraintStart_toStartOf="@+id/main_vertical_guideline"
+        app:layout_constraintTop_toTopOf="@+id/main_horizontal_guideline" />
 
     <Button
         android:id="@+id/settings"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="8dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginLeft="8dp"
-        android:layout_marginRight="8dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
         android:background="@drawable/buttonshape"
         android:gravity="center"
         android:text="@string/main_settings"
         android:textColor="#FFFFFF"
         android:textSize="20dp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/start_journey" />
+        app:layout_constraintEnd_toStartOf="@+id/main_vertical_guideline"
+        app:layout_constraintStart_toStartOf="@+id/main_vertical_guideline"
+        app:layout_constraintTop_toTopOf="@+id/main_horizontal_guideline" />
+
+    <android.support.constraint.Guideline
+        android:id="@+id/main_horizontal_guideline"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.5" />
+
+    <android.support.constraint.Guideline
+        android:id="@+id/main_vertical_guideline"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.5" />
 
 </android.support.constraint.ConstraintLayout>

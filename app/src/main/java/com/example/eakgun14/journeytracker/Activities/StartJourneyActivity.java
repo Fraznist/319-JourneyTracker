@@ -20,6 +20,7 @@ import android.widget.Toast;
 import com.example.eakgun14.journeytracker.DataTypes.Journal;
 import com.example.eakgun14.journeytracker.DataTypes.Journey;
 import com.example.eakgun14.journeytracker.Dialogs.NewJourneyDialogFragment;
+import com.example.eakgun14.journeytracker.Dialogs.NoticeDialogListener;
 import com.example.eakgun14.journeytracker.LocalDatabase.AppDatabase;
 import com.example.eakgun14.journeytracker.R;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -34,11 +35,12 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.location.LocationListener;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
 public class StartJourneyActivity extends FragmentActivity implements OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks,
-        LocationListener, NewJourneyDialogFragment.NoticeDialogListener {
+        LocationListener, NoticeDialogListener {
     private static final String TAG = "StartJourneyActivity";
 
     private static final String FINE_LOCATION = Manifest.permission.ACCESS_FINE_LOCATION;
@@ -199,6 +201,21 @@ public class StartJourneyActivity extends FragmentActivity implements OnMapReady
         recordingJourney = false;
         FragmentManager fm = getSupportFragmentManager();
         DialogFragment frag =  new NewJourneyDialogFragment();
+
+        Bundle args = new Bundle();
+        List<Journal> journals = db.journalDao().getAllJournals();
+        ArrayList<String> names = new ArrayList<String>();
+        ArrayList<Integer> ids = new ArrayList<Integer>();
+
+        for (Journal j : journals) {
+            names.add(j.getName());
+            ids.add(j.getId());
+        }
+
+        args.putStringArrayList("journal names", names);
+        args.putIntegerArrayList("journal ids", ids);
+
+        frag.setArguments(args);
         frag.show(fm, "fragment_save_journey");
 
     }
@@ -236,20 +253,22 @@ public class StartJourneyActivity extends FragmentActivity implements OnMapReady
     }
 
     @Override
-    public void onDialogClick(NewJourneyDialogFragment dialog) {
-        String name = dialog.getNameText().getText().toString();
-        String desc = dialog.getDescText().getText().toString();
+    public void onDialogClick(DialogFragment dialog) {
 
-        Journal journal = (Journal) dialog.getSpinner().getSelectedItem();
-        Integer j_id = journal.getId();
+        try {
+            NewJourneyDialogFragment dial = (NewJourneyDialogFragment) dialog;
 
-        Journey j = new Journey(name, desc, j_id);
-        Log.d(TAG, j.toString());
-        db.journeyDao().insertAll(j);
-    }
+            String name = dial.getNameText().getText().toString();
+            String desc = dial.getDescText().getText().toString();
 
-    @Override
-    public AppDatabase getAppDatabase() {
-        return db;
+            int j_id = dial.getSelectedJournalID();
+
+            Journey j = new Journey(name, desc, j_id);
+            db.journeyDao().insertAll(j);
+        }
+        catch (ClassCastException e) {
+            throw new ClassCastException(dialog.toString()
+                    + " must extend NewJourneyDialogFragment");
+        }
     }
 }

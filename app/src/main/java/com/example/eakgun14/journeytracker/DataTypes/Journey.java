@@ -3,6 +3,7 @@ package com.example.eakgun14.journeytracker.DataTypes;
 import android.arch.persistence.room.ColumnInfo;
 import android.arch.persistence.room.Entity;
 import android.arch.persistence.room.ForeignKey;
+import android.arch.persistence.room.Index;
 import android.arch.persistence.room.PrimaryKey;
 
 import static android.arch.persistence.room.ForeignKey.SET_DEFAULT;
@@ -11,7 +12,8 @@ import static android.arch.persistence.room.ForeignKey.SET_NULL;
 @Entity(foreignKeys = @ForeignKey(entity = Journal.class,
                                     parentColumns = "id",
                                     childColumns = "journal_id",
-                                    onDelete = SET_NULL))
+                                    onDelete = SET_NULL),
+        indices = {@Index(value = {"journal_id"})})
 public class Journey implements Journable {
 
     @PrimaryKey(autoGenerate = true)
