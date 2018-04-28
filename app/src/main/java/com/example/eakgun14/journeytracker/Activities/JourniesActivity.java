@@ -12,6 +12,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
@@ -21,14 +22,16 @@ import com.example.eakgun14.journeytracker.Adapters.JournableAdapter;
 import com.example.eakgun14.journeytracker.Adapters.LightManagerAdapter;
 import com.example.eakgun14.journeytracker.DataTypes.Journable;
 import com.example.eakgun14.journeytracker.DataTypes.Journey;
-import com.example.eakgun14.journeytracker.DataTypes.listActivity;
+import com.example.eakgun14.journeytracker.Adapters.JournableAdapterListener;
+import com.example.eakgun14.journeytracker.Dialogs.NoticeDialogListener;
 import com.example.eakgun14.journeytracker.Dialogs.ViewJourneyDialogFragment;
 import com.example.eakgun14.journeytracker.LocalDatabase.AppDatabase;
 import com.example.eakgun14.journeytracker.R;
 
 import java.util.Arrays;
+import java.util.List;
 
-public class JourniesActivity extends AppCompatActivity implements listActivity, SensorEventListener {
+public class JourniesActivity extends AppCompatActivity implements JournableAdapterListener, SensorEventListener, NoticeDialogListener {
 
     AppDatabase db;
 
@@ -100,7 +103,10 @@ public class JourniesActivity extends AppCompatActivity implements listActivity,
         viewButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                adapter.add(adapter.getItemCount(), new Journey("perkele", "vwelbvle", journalID));
+                Object[] temp = adapter.getSelectedJournables().toArray();
+                Journey[] selectedJournies = Arrays.copyOf(temp, temp.length, Journey[].class);
+
+                startViewJournesActivity(extractRouteArray(selectedJournies));
             }
         });
 
@@ -134,7 +140,22 @@ public class JourniesActivity extends AppCompatActivity implements listActivity,
     @Override
     protected void onStop() {
         super.onStop();
-        updateJourniesDatabase();;
+        updateJourniesDatabase();
+    }
+
+    @Override
+    public void onViewItemClicked(Object o) {
+        Journey j = (Journey) o;
+        FragmentManager fm = getSupportFragmentManager();
+        DialogFragment frag =  new ViewJourneyDialogFragment();
+
+        Bundle args = new Bundle();
+        args.putString("name", j.getName());
+        args.putString("description", j.getDescription());
+        args.putString("route", j.getRoute());
+        frag.setArguments(args);
+
+        frag.show(fm, "fragment_view_journey_info");
     }
 
     public void updateJourniesDatabase() {
@@ -145,17 +166,24 @@ public class JourniesActivity extends AppCompatActivity implements listActivity,
         db.journeyDao().deleteAll(Arrays.copyOf(temp, temp.length, Journey[].class));
     }
 
+    private void startViewJournesActivity(String ...routes) {
+        Intent intent = new Intent(JourniesActivity.this, ViewJourniesActivity.class);
+        intent.putExtra("routes", routes);
+
+        startActivity(intent);
+    }
+
+    private String[] extractRouteArray(Journey ...journies) {
+        String[] routes = new String[journies.length];
+
+        for (int i = 0; i < routes.length; i++)
+            routes[i] = journies[i].getRoute();
+
+        return routes;
+    }
+
     @Override
-    public void startActivity(Object o) {
-        Journey j = (Journey) o;
-        FragmentManager fm = getSupportFragmentManager();
-        DialogFragment frag =  new ViewJourneyDialogFragment();
-
-        Bundle args = new Bundle();
-        args.putString("name", j.getName());
-        args.putString("description", j.getDescription());
-        frag.setArguments(args);
-
-        frag.show(fm, "fragment_view_journey_info");
+    public void onDialogClick(DialogFragment dialog) {
+        startViewJournesActivity( ((ViewJourneyDialogFragment) dialog).getRoute() );
     }
 }

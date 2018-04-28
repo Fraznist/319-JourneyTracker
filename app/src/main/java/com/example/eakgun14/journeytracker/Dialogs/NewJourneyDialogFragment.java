@@ -8,15 +8,19 @@ import android.content.DialogInterface;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
+import android.support.v4.app.FragmentManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.Spinner;
 
+import com.example.eakgun14.journeytracker.DataTypes.Journal;
+import com.example.eakgun14.journeytracker.LocalDatabase.AppDatabase;
 import com.example.eakgun14.journeytracker.R;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class NewJourneyDialogFragment extends DialogFragment {
 
@@ -42,7 +46,7 @@ public class NewJourneyDialogFragment extends DialogFragment {
         ids = getArguments().getIntegerArrayList("journal ids");
 
         names.add(0, "Don't Assing to any Journal");
-        ids.add(0, -1);
+        ids.add(0, null);
 
         ArrayAdapter<String> adapter = new ArrayAdapter<String>(
                 getActivity(), android.R.layout.simple_spinner_item, names);

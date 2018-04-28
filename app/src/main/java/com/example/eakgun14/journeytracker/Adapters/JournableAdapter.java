@@ -10,10 +10,7 @@ import android.widget.TextView;
 import android.view.View;
 import android.view.View.OnClickListener;
 
-import com.example.eakgun14.journeytracker.Activities.JournalsActivity;
 import com.example.eakgun14.journeytracker.DataTypes.Journable;
-import com.example.eakgun14.journeytracker.DataTypes.listActivity;
-import com.example.eakgun14.journeytracker.DataTypes.Journal;
 import com.example.eakgun14.journeytracker.R;
 
 import java.util.ArrayList;
@@ -26,9 +23,9 @@ public class JournableAdapter extends RecyclerView.Adapter<JournableAdapter.View
     private List<Journable> selectedJournables;
     private List<Journable> JournablesToAdd;
     private List<Journable> JournablesToDelete;
-    private listActivity jact;
+    private JournableAdapterListener jact;
 
-    public JournableAdapter(Journable[] jjs, listActivity ja) {
+    public JournableAdapter(Journable[] jjs, JournableAdapterListener ja) {
         Journables = new ArrayList<Journable>(Arrays.asList(jjs));
         selectedJournables = new ArrayList<Journable>();
         JournablesToAdd = new ArrayList<Journable>();
@@ -81,7 +78,7 @@ public class JournableAdapter extends RecyclerView.Adapter<JournableAdapter.View
         holder.name.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                jact.startActivity(j);
+                jact.onViewItemClicked(j);
             }
         });
         holder.selected.setChecked(false);
@@ -109,6 +106,10 @@ public class JournableAdapter extends RecyclerView.Adapter<JournableAdapter.View
 
     public List<Journable> getJournablesToDelete() {
         return JournablesToDelete;
+    }
+
+    public List<Journable> getSelectedJournables() {
+        return selectedJournables;
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {

@@ -28,10 +28,14 @@ public class Journey implements Journable {
     @ColumnInfo(name = "description")
     private String description;
 
-    public Journey(String name, String description, Integer journal_id) {
+    @ColumnInfo(name = "route")
+    private String route;
+
+    public Journey(String name, String description, Integer journal_id, String route) {
         this.name = name;
         this.description = description;
         this.journal_id = journal_id;
+        this.route = route;
     }
 
     public String getName() {
@@ -68,5 +72,13 @@ public class Journey implements Journable {
 
     public void setId(Integer id) {
         this.id = id;
+    }
+
+    public String getRoute() {
+        return route;
+    }
+
+    public void setRoute(String route) {
+        this.route = route;
     }
 }

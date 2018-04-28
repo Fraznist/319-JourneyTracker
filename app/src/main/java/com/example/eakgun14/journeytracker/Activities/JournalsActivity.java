@@ -23,13 +23,13 @@ import java.util.Arrays;
 import com.example.eakgun14.journeytracker.Adapters.JournableAdapter;
 import com.example.eakgun14.journeytracker.Adapters.LightManagerAdapter;
 import com.example.eakgun14.journeytracker.DataTypes.Journal;
-import com.example.eakgun14.journeytracker.DataTypes.listActivity;
+import com.example.eakgun14.journeytracker.Adapters.JournableAdapterListener;
 import com.example.eakgun14.journeytracker.Dialogs.CreateJournalDialogFragment;
 import com.example.eakgun14.journeytracker.Dialogs.NoticeDialogListener;
 import com.example.eakgun14.journeytracker.LocalDatabase.AppDatabase;
 import com.example.eakgun14.journeytracker.R;
 
-public class JournalsActivity extends AppCompatActivity implements listActivity, NoticeDialogListener, SensorEventListener {
+public class JournalsActivity extends AppCompatActivity implements JournableAdapterListener, NoticeDialogListener, SensorEventListener {
 
     AppDatabase db;
 
@@ -142,7 +142,7 @@ public class JournalsActivity extends AppCompatActivity implements listActivity,
     }
 
     @Override
-    public void startActivity(Object o) {
+    public void onViewItemClicked(Object o) {
         Journal j = (Journal)o;
         Integer journalID = j.getId();
         String journalName = j.getName();
@@ -160,7 +160,7 @@ public class JournalsActivity extends AppCompatActivity implements listActivity,
 
             String name = dial.getNameText().getText().toString();
 
-            adapter.add(adapter.getItemCount(), new Journal(name));
+            adapter.add(adapter.getItemCount(), new Journal(name, ""));
         }
         catch (ClassCastException e) {
             throw new ClassCastException(dialog.toString()

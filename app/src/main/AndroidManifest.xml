@@ -77,6 +77,9 @@
             android:name=".Activities.SettingsActivity"
             android:parentActivityName=".Activities.MainActivity"
             android:screenOrientation="portrait" />
+        <activity
+            android:name=".Activities.ViewJourniesActivity"
+            android:label="@string/title_activity_view_journies"></activity>
     </application>
 
 </manifest>
