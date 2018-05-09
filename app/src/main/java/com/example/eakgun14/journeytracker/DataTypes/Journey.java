@@ -19,6 +19,7 @@ public class Journey implements Journable {
     @PrimaryKey(autoGenerate = true)
     private Integer id;
 
+    // Reference to containing journal
     @ColumnInfo(name = "journal_id")
     private Integer journal_id;
 

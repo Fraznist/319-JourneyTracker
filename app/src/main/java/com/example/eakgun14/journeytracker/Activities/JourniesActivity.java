@@ -55,6 +55,7 @@ public class JourniesActivity extends AppCompatActivity implements JournableAdap
 
         Intent intent = getIntent();
 
+        // Special case requires to display all journies, regardless of journal
         if (intent.getIntExtra("Special", 0) == -1) {
             journalName = "All Journeys";
             journalID = 0;
@@ -73,10 +74,12 @@ public class JourniesActivity extends AppCompatActivity implements JournableAdap
                 .allowMainThreadQueries()
                 .build();
 
+        // Special case, get all journeys to display
         if (journalID == 0) {
             Object[] temp = db.journeyDao().getAllJourneys().toArray();
             journies = Arrays.copyOf(temp, temp.length, Journey[].class);
         }
+        // get only the journies that are under the specified journal by the intent.
         else {
             Object[] temp = db.journeyDao().getAllJourneysInJournal(journalID).toArray();
             journies = Arrays.copyOf(temp, temp.length, Journey[].class);
@@ -140,15 +143,21 @@ public class JourniesActivity extends AppCompatActivity implements JournableAdap
     @Override
     protected void onStop() {
         super.onStop();
+        // Store changes to database only when the activity stops.
         updateJourniesDatabase();
     }
 
     @Override
     public void onViewItemClicked(Object o) {
         Journey j = (Journey) o;
+
+        // Set up a dialog box to show a specific journeys details.
         FragmentManager fm = getSupportFragmentManager();
         DialogFragment frag =  new ViewJourneyDialogFragment();
 
+        // The dialog fragment needs to display the name and the description
+        // It also stores the route of the journey since the route will be viewed
+        // by pressing a button from the dialog fragment
         Bundle args = new Bundle();
         args.putString("name", j.getName());
         args.putString("description", j.getDescription());
@@ -159,6 +168,7 @@ public class JourniesActivity extends AppCompatActivity implements JournableAdap
     }
 
     public void updateJourniesDatabase() {
+        // Using arrays rather than collections because they are simpler to cast
         Object[] temp = adapter.getJournablesToAdd().toArray();
         db.journeyDao().insertAll(Arrays.copyOf(temp, temp.length, Journey[].class));
 
@@ -167,6 +177,8 @@ public class JourniesActivity extends AppCompatActivity implements JournableAdap
     }
 
     private void startViewJournesActivity(String ...routes) {
+        // routes is an array of JSON objects
+        // each JSON object represents a list of coordiantes when deserialized
         Intent intent = new Intent(JourniesActivity.this, ViewJourniesActivity.class);
         intent.putExtra("routes", routes);
 
@@ -174,6 +186,8 @@ public class JourniesActivity extends AppCompatActivity implements JournableAdap
     }
 
     private String[] extractRouteArray(Journey ...journies) {
+        // Only need the list of coordinates that represent a route,
+        // Can't pass Journey object via intents anyways, they aren't parcelable
         String[] routes = new String[journies.length];
 
         for (int i = 0; i < routes.length; i++)
@@ -184,6 +198,8 @@ public class JourniesActivity extends AppCompatActivity implements JournableAdap
 
     @Override
     public void onDialogClick(DialogFragment dialog) {
+        // NoticeDialogListener callback,
+        // display the route that is stored in the dialogFragment
         startViewJournesActivity( ((ViewJourneyDialogFragment) dialog).getRoute() );
     }
 }

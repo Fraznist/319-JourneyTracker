@@ -17,13 +17,14 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+// Custom class that can show both Journeys and Journals, trating them as Journable objects
 public class JournableAdapter extends RecyclerView.Adapter<JournableAdapter.ViewHolder> {
 
-    private List<Journable> Journables;
-    private List<Journable> selectedJournables;
-    private List<Journable> JournablesToAdd;
-    private List<Journable> JournablesToDelete;
-    private JournableAdapterListener jact;
+    private List<Journable> Journables; // Journables currently shown in the RecyclerView
+    private List<Journable> selectedJournables; // Journables that have their checkbox checked
+    private List<Journable> JournablesToAdd;    // Journables scheduled to be stored on db
+    private List<Journable> JournablesToDelete; // Journables scheduled to bre removed from db
+    private JournableAdapterListener jact;  // reference to the calling activity
 
     public JournableAdapter(Journable[] jjs, JournableAdapterListener ja) {
         Journables = new ArrayList<Journable>(Arrays.asList(jjs));
@@ -40,19 +41,25 @@ public class JournableAdapter extends RecyclerView.Adapter<JournableAdapter.View
     }
 
     public void removeSelected() {
+        // Remove all selected journables from the list, and schedule them for
+        // removal from the database
         for (Journable j : selectedJournables)
             remove(j);
         selectedJournables.clear();
     }
 
     public void remove(Journable j) {
-        int i = Journables.indexOf(j);
+        // Remove a journable from list, schedule it for removal from db
+
+        int i = Journables.indexOf(j);  // index required to notify RecyclerView
         Journables.remove(i);
 
-        int index = JournablesToAdd.indexOf(j);
+        int index = JournablesToAdd.indexOf(j); // Is the journable to remove is actually in database?
         if (index != -1)
+            // apparently not, remove it from the scheduled addends to the database
             JournablesToAdd.remove(index);
         else
+            // its already in database, schedule for removal
             JournablesToDelete.add(j);
         notifyItemRemoved(i);
     }
@@ -78,10 +85,12 @@ public class JournableAdapter extends RecyclerView.Adapter<JournableAdapter.View
         holder.name.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
+                // activity specific behavior
                 jact.onViewItemClicked(j);
             }
         });
         holder.selected.setChecked(false);
+        // Update selectedJournables list
         holder.selected.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {

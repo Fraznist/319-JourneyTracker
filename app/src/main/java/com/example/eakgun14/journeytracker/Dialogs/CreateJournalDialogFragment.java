@@ -34,6 +34,7 @@ public class CreateJournalDialogFragment extends DialogFragment {
 
         nameText = view.findViewById(R.id.dialog_create_journal_name);
         saveJournal = view.findViewById(R.id.dialog_create_journal_save);
+        // trigger callback on parent activity
         saveJournal.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

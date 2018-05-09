@@ -10,11 +10,15 @@ import android.view.ViewGroup;
 
 import com.example.eakgun14.journeytracker.R;
 
+// Custom class(probably inappropriately named)
+// that handles input from the light sensor in a certain manner.
 public class LightManagerAdapter {
 
+    // valid bouds for the light sensor input
     final int MAX_RANGE = 2560;
     final int MIN_RANGE = 160;
 
+    // light and dark colors from the app theme
     int lightColor;
     int darkColor;
 
@@ -32,16 +36,19 @@ public class LightManagerAdapter {
         mLightSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_LIGHT);
     }
 
+    // stop listening to light sensor, called by activity.onPause
     public void pause() {
         mSensorManager.unregisterListener((SensorEventListener) context);
     }
 
+    // start listening to light sensor, called by activity.onResume
     public void resume() {
         mSensorManager.registerListener((SensorEventListener) context, mLightSensor, SensorManager.SENSOR_DELAY_UI);
     }
 
     public void illuminationChanged(SensorEvent event) {
         float lumination = event.values[0];
+        // bind the input between the bounds
         if (lumination > MAX_RANGE) lumination = MAX_RANGE;
         else if (lumination < MIN_RANGE) lumination = MIN_RANGE;
 
@@ -53,8 +60,9 @@ public class LightManagerAdapter {
         return (a + ((b - a) * proportion));
     }
 
-    /** Returns an interpoloated color, between <code>a</code> and <code>b</code> */
+    // Returns an interpoloated color, between color a and color b
     private int interpolateColor(int a, int b, float proportion) {
+        // Turns out interpolation of colors works best in HSV format.
         float[] hsva = new float[3];
         float[] hsvb = new float[3];
         Color.colorToHSV(a, hsva);

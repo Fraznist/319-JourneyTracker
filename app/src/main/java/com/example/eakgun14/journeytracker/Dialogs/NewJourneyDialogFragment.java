@@ -48,6 +48,9 @@ public class NewJourneyDialogFragment extends DialogFragment {
         names.add(0, "Don't Assing to any Journal");
         ids.add(0, null);
 
+        // Fill spinner with journal details
+        // Sending only names to the spinner is enough, since the indices at the spinner
+        // are enough to identify their id's
         ArrayAdapter<String> adapter = new ArrayAdapter<String>(
                 getActivity(), android.R.layout.simple_spinner_item, names);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
@@ -55,6 +58,7 @@ public class NewJourneyDialogFragment extends DialogFragment {
 
         builder.setTitle(R.string.journey_dialog_title)
                 .setView(view)
+                // trigger parent actvity callback
                 .setNeutralButton(R.string.journey_dialog_save, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {

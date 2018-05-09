@@ -13,6 +13,11 @@ import java.util.List;
 
 @Entity
 public class Journal implements Journable{
+    // Relations between Journeys and containing journals are handled at the database level
+    // maintaining a list of journeys for every journal in memory is redundant.
+    // all journals can be in memory at once, but at that state their journey contents can't be
+    // accessed anyways.
+
     @PrimaryKey(autoGenerate = true)
     private Integer id;
 

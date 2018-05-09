@@ -122,10 +122,12 @@ public class JournalsActivity extends AppCompatActivity implements JournableAdap
     @Override
     protected void onStop() {
         super.onStop();
-        updateJournalDatabase();;
+        // Database is updated only when the activity stops
+        updateJournalDatabase();
     }
 
     public void updateJournalDatabase() {
+        // Using arrays rather than collections because they are simpler to cast
         Object[] temp = adapter.getJournablesToAdd().toArray();
         db.journalDao().insertAll(Arrays.copyOf(temp, temp.length, Journal[].class));
 
@@ -135,6 +137,7 @@ public class JournalsActivity extends AppCompatActivity implements JournableAdap
         db.journalDao().deleteAll(jays);
     }
 
+    // Start JourniesActivity with a special intent, in order to display every single journey
     public void startAllJourniesActivity() {
         Intent intent = new Intent(JournalsActivity.this, JourniesActivity.class);
         intent.putExtra("Special", -1);
@@ -143,6 +146,8 @@ public class JournalsActivity extends AppCompatActivity implements JournableAdap
 
     @Override
     public void onViewItemClicked(Object o) {
+        // JournableAdapterListener callback
+        // Start a JourniesActivity to display the contents of the selcted journal.
         Journal j = (Journal)o;
         Integer journalID = j.getId();
         String journalName = j.getName();
@@ -154,7 +159,10 @@ public class JournalsActivity extends AppCompatActivity implements JournableAdap
 
     @Override
     public void onDialogClick(DialogFragment dialog) {
-
+        // NoticeDialogListener callback
+        // Create a new journal with the specified details
+        // For now it exists only in the JournableAdapter instance,
+        // it will be stored in the db when this activity stops.
         try {
             CreateJournalDialogFragment dial = (CreateJournalDialogFragment) dialog;
 

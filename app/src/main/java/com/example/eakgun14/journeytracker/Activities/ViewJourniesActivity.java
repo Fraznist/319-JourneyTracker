@@ -27,14 +27,11 @@ import com.google.gson.reflect.TypeToken;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Random;
 
 public class ViewJourniesActivity extends FragmentActivity implements OnMapReadyCallback, GoogleMap.OnMapLoadedCallback {
 
     private static final String TAG = "ViewJourniesActivity";
-    private static final String FINE_LOCATION = Manifest.permission.ACCESS_FINE_LOCATION;
-    private static final String COURSE_LOCATION = Manifest.permission.ACCESS_COARSE_LOCATION;
-    private static final int LOCATION_PERMISSION_REQUEST_CODE = 1234;
-    private Boolean mLocationPermissionsGranted = false;
 
     private GoogleMap mMap;
     private List<List<LatLng>> routeList;
@@ -50,15 +47,18 @@ public class ViewJourniesActivity extends FragmentActivity implements OnMapReady
         Intent intent = getIntent();
         String[] routes = intent.getStringArrayExtra("routes");
 
+        // Randomize circular array starting index to add variables
+        Random rand = new Random();
+        i = rand.nextInt(6);
+
         routeList = new LinkedList<List<LatLng>>();
 
+        // deserialize every JSON file into a list of LatLng coordinates
         Gson gson = new Gson();
         for (int i = 0; i < routes.length; i++) {
             List<LatLng> latLngList = gson.fromJson(routes[i], new TypeToken<List<LatLng>>(){}.getType());
             routeList.add(latLngList);
         }
-
-        Log.d("latList", routeList.toString());
 
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
@@ -86,7 +86,9 @@ public class ViewJourniesActivity extends FragmentActivity implements OnMapReady
 
     @Override
     public void onMapLoaded() {
-        int i = 0;
+        // Find out the bounding rectangle that surrounds all of the LatLng coordinates
+        // that have to be displayed, then zoom the camera accordingly.
+        int i = 0;  // Counter, newLatLngBounds raises an exception when there aren't any points
         LatLngBounds.Builder builder = new LatLngBounds.Builder();
         for (List<LatLng> route : routeList) {
             // Find the bounding latitude and longitude values, to determine where to center the camera
@@ -102,7 +104,8 @@ public class ViewJourniesActivity extends FragmentActivity implements OnMapReady
             mMap.addPolyline(polyLine);
         }
         if (i == 0) {
-            Toast.makeText(this, "BULLSHIT", Toast.LENGTH_SHORT).show();
+            // Don't try to
+            Toast.makeText(this, "No points to display", Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -111,59 +114,9 @@ public class ViewJourniesActivity extends FragmentActivity implements OnMapReady
     }
 
     private int getNextColor() {
+        // Use the color array in a circular manner.
         int nextColor = colors[i];
         i++; i = i % colors.length;
         return nextColor;
-    }
-
-    // Request permissions to use fine and coarse location services,
-    // If both permissions are granted, set activity state as permissions granted
-    // and initialize map, which will trigger onMapReady callback
-    private void getLocationPermission(){
-        Log.d(TAG, "getLocationPermission: getting location permissions");
-        String[] permissions = {Manifest.permission.ACCESS_FINE_LOCATION,
-                Manifest.permission.ACCESS_COARSE_LOCATION};
-
-        if(ContextCompat.checkSelfPermission(this.getApplicationContext(), FINE_LOCATION)
-                == PackageManager.PERMISSION_GRANTED){
-            if(ContextCompat.checkSelfPermission(this.getApplicationContext(),
-                    COURSE_LOCATION) == PackageManager.PERMISSION_GRANTED){
-                mLocationPermissionsGranted = true;
-            }else{
-                requestPermissions(permissions);
-            }
-        }else{
-            requestPermissions(permissions);
-        }
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        Log.d(TAG, "onRequestPermissionsResult: called.");
-        mLocationPermissionsGranted = false;
-
-        switch(requestCode){
-            case LOCATION_PERMISSION_REQUEST_CODE:{
-                if(grantResults.length > 0){
-                    for(int i = 0; i < grantResults.length; i++){
-                        if(grantResults[i] != PackageManager.PERMISSION_GRANTED){
-                            mLocationPermissionsGranted = false;
-                            Log.d(TAG, "onRequestPermissionsResult: permission failed");
-                            return;
-                        }
-                    }
-                    Log.d(TAG, "onRequestPermissionsResult: permission granted");
-                    mLocationPermissionsGranted = true;
-                }
-            }
-        }
-    }
-
-    // request permissions for ACCESS_LOCATION, whose result will trigger
-    // onPermissionsRequestRequest callback
-    private void requestPermissions(String[] permissions) {
-        ActivityCompat.requestPermissions(this,
-                permissions,
-                LOCATION_PERMISSION_REQUEST_CODE);
     }
 }
