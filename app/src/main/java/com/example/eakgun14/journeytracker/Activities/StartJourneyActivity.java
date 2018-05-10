@@ -8,6 +8,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.location.Location;
@@ -50,18 +51,11 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.gson.Gson;
 
-import org.json.JSONObject;
-
 import java.util.ArrayList;
 import java.util.List;
 
-import cz.msebera.android.httpclient.Header;
-
 public class StartJourneyActivity extends FragmentActivity implements OnMapReadyCallback,
         NoticeDialogListener, RouteServiceCallbacks {
-//    private static final String WEATHER_URL = "http://api.openweathermap.org/data/2.5/weather";
-//    private static final String APP_ID = "e72ca729af228beabd5d20e3b7749713";
-    private static float DEF_ZOOM = 15f;
 
     // UI objects
     private TextView mTemperature;
@@ -87,8 +81,7 @@ public class StartJourneyActivity extends FragmentActivity implements OnMapReady
         setContentView(R.layout.activity_start_journey);
 
         // Restore saved state so that a route being recorded isn't lost on orientation change
-        if (savedInstanceState != null)
-            recordingJourney = savedInstanceState.getBoolean("KEY_BUTTON_STATE");
+        loadPrefs();
 
         routeManager = RouteManager.getInstance();
 
@@ -140,6 +133,12 @@ public class StartJourneyActivity extends FragmentActivity implements OnMapReady
             unbindService(serviceConnection);
             routeServiceBound = false;
         }
+    }
+
+    @Override
+    protected void onDestroy() {
+        savePrefs();
+        super.onDestroy();
     }
 
     @Override
@@ -212,7 +211,7 @@ public class StartJourneyActivity extends FragmentActivity implements OnMapReady
     // Move the camera to the specified latitude and longitude with a default zoom value
     // @TODO keep users custom zoom value on camera movements if the user tampers with the zoom
     private void moveCamera(LatLng latLng){
-        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, DEF_ZOOM));
+        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 15f));
     }
 
     @Override
@@ -389,10 +388,15 @@ public class StartJourneyActivity extends FragmentActivity implements OnMapReady
         }
     }
 
-    @Override
-    protected void onSaveInstanceState (Bundle outState) {
-        super.onSaveInstanceState(outState);
-        outState.putBoolean("KEY_BUTTON_STATE", recordingJourney);
+    private void savePrefs() {
+        SharedPreferences sp = getPreferences(MODE_PRIVATE);
+        SharedPreferences.Editor editor = sp.edit();
+        editor.putBoolean("KEY_BUTTON_STATE", recordingJourney);
+        editor.apply();
     }
 
+    private void loadPrefs() {
+        SharedPreferences sp = getPreferences(MODE_PRIVATE);
+        recordingJourney = sp.getBoolean("KEY_BUTTON_STATE", false);
+    }
 }
