@@ -3,29 +3,30 @@ package com.example.eakgun14.journeytracker.RouteService;
 import android.annotation.SuppressLint;
 import android.app.Service;
 import android.content.Intent;
+import android.location.Location;
 import android.os.Binder;
 import android.os.IBinder;
 import android.os.Looper;
 import android.widget.Toast;
 
+import com.example.eakgun14.journeytracker.DataTypes.WeatherInfo;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.maps.model.LatLng;
 
-public class RouteService extends Service {
+import java.util.List;
+
+public class RouteService extends Service implements WeatherListener {
     // Binder given to clients
     private final IBinder binder = new LocalBinder();
     // Registered callbacks
     private RouteServiceCallbacks serviceCallbacks;
 
     private RouteManager routeManager;
-
-    // GoogleMapsApi
-    private FusedLocationProviderClient mFusedLocationProviderClient;
-    private LocationRequest mLocationRequest;
-    private LocationCallback mLocationCallback;
+    private WeatherManager weatherManager;
 
     @SuppressLint("MissingPermission")
     @Override
@@ -33,24 +34,28 @@ public class RouteService extends Service {
         Toast.makeText(this, "RouteService started!", Toast.LENGTH_SHORT).show();
 
         routeManager = RouteManager.getInstance();
+        weatherManager = WeatherManager.getInstance();
+        weatherManager.addSubscriber(this);
 
-        mFusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
-        mLocationCallback = new LocationCallback() {
+        FusedLocationProviderClient mFusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
+        LocationCallback mLocationCallback = new LocationCallback() {
             @Override
             public void onLocationResult(LocationResult locationResult) {
                 super.onLocationResult(locationResult);
-                Toast.makeText(RouteService.this, "Service detected loc change", Toast.LENGTH_SHORT).show();
-                routeManager.add(locationResult);
+                LatLng coordinates = getLatLng(locationResult);
+                routeManager.add(coordinates);
                 if (serviceCallbacks != null)
                     serviceCallbacks.updateMap();
+                if (serviceCallbacks != null)
+                    weatherManager.locationChanged(coordinates);
             }
         };
         // Specify the sensitivity of the GPS sensor
         // @TODO change GPS sensitivities to more reasonable values after testing.
-        mLocationRequest = new LocationRequest();
-        mLocationRequest.setInterval(5)
-                .setFastestInterval(1)
-                .setSmallestDisplacement(5)
+        LocationRequest mLocationRequest = new LocationRequest();
+        mLocationRequest.setInterval(10000)
+                .setFastestInterval(5000)
+                .setSmallestDisplacement(20)
                 .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
         mFusedLocationProviderClient.requestLocationUpdates(mLocationRequest, mLocationCallback, Looper.myLooper());
 
@@ -78,5 +83,22 @@ public class RouteService extends Service {
 
     public void setCallbacks(RouteServiceCallbacks callbacks) {
         serviceCallbacks = callbacks;
+    }
+
+    private LatLng getLatLng(LocationResult locationResult) {
+        List<Location> locationList = locationResult.getLocations();
+        if (locationList.size() > 0) {
+            //The last location in the list is the newest
+            Location location = locationList.get(locationList.size() - 1);
+            // Only concerned about coordinates
+            return new LatLng(location.getLatitude(), location.getLongitude());
+        }
+        else return null;
+    }
+
+    @Override
+    public void onWeatherInfo(WeatherInfo weather) {
+        if (serviceCallbacks != null)
+            serviceCallbacks.updateWeather(weather);
     }
 }

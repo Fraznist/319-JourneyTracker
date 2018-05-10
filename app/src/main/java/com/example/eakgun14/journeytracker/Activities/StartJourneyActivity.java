@@ -14,6 +14,7 @@ import android.location.Location;
 import android.os.Build;
 import android.os.IBinder;
 import android.os.Looper;
+import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentActivity;
@@ -48,9 +49,6 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.gson.Gson;
-import com.loopj.android.http.AsyncHttpClient;
-import com.loopj.android.http.JsonHttpResponseHandler;
-import com.loopj.android.http.RequestParams;
 
 import org.json.JSONObject;
 
@@ -61,8 +59,8 @@ import cz.msebera.android.httpclient.Header;
 
 public class StartJourneyActivity extends FragmentActivity implements OnMapReadyCallback,
         NoticeDialogListener, RouteServiceCallbacks {
-    private static final String WEATHER_URL = "http://api.openweathermap.org/data/2.5/weather";
-    private static final String APP_ID = "e72ca729af228beabd5d20e3b7749713";
+//    private static final String WEATHER_URL = "http://api.openweathermap.org/data/2.5/weather";
+//    private static final String APP_ID = "e72ca729af228beabd5d20e3b7749713";
     private static float DEF_ZOOM = 15f;
 
     // UI objects
@@ -79,7 +77,7 @@ public class StartJourneyActivity extends FragmentActivity implements OnMapReady
     private RouteManager routeManager;
     private RouteService routeService;
     private boolean routeServiceBound = false;
-    private LatLng oldLoc = null;
+//    private LatLng oldLoc = null;
     private Boolean recordingJourney = false;
     private AppDatabase db;
 
@@ -178,81 +176,6 @@ public class StartJourneyActivity extends FragmentActivity implements OnMapReady
         }
     }
 
-    // Move the camera to the specified latitude and longitude with a default zoom value
-    // @TODO keep users custom zoom value on camera movements if the user tampers with the zoom
-    private void moveCamera(LatLng latLng){
-        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, DEF_ZOOM));
-    }
-
-    // Check whether the Location service permission is granted by the OS, and request it if not.
-    public static final int MY_PERMISSIONS_REQUEST_LOCATION = 99;
-    private void checkLocationPermission() {
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
-                != PackageManager.PERMISSION_GRANTED) {
-            // App doesn't have location services permission from OS
-
-            // Should we show an explanation?
-            if (ActivityCompat.shouldShowRequestPermissionRationale(this,
-                    Manifest.permission.ACCESS_FINE_LOCATION)) {
-
-                // Show an explanation to the user *asynchronously* -- don't block
-                // this thread waiting for the user's response! After the user
-                // sees the explanation, try again to request the permission.
-                new AlertDialog.Builder(this)
-                        .setTitle("Location Permission Needed")
-                        .setMessage("This app needs the Location permission, please accept to use location functionality")
-                        .setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialogInterface, int i) {
-                                //Prompt the user once explanation has been shown
-                                ActivityCompat.requestPermissions(StartJourneyActivity.this,
-                                        new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
-                                        MY_PERMISSIONS_REQUEST_LOCATION );
-                            }
-                        })
-                        .create()
-                        .show();
-
-
-            } else {
-                // No explanation needed, we can request the permission.
-                ActivityCompat.requestPermissions(this,
-                        new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
-                        MY_PERMISSIONS_REQUEST_LOCATION );
-            }
-        }
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode,
-                                           String permissions[], int[] grantResults) {
-        switch (requestCode) {
-            case MY_PERMISSIONS_REQUEST_LOCATION: {
-                // If request is cancelled, the result arrays are empty.
-                if (grantResults.length > 0
-                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-
-                    // permission was granted, yay! Do the
-                    // location-related task you need to do.
-                    if (ContextCompat.checkSelfPermission(this,
-                            Manifest.permission.ACCESS_FINE_LOCATION)
-                            == PackageManager.PERMISSION_GRANTED) {
-
-                        mFusedLocationProviderClient.requestLocationUpdates(locationRequest, mLocationCallback, Looper.myLooper());
-                        mMap.setMyLocationEnabled(true);
-                    }
-
-                } else {
-
-                    // permission denied, boo! Disable the
-                    // functionality that depends on this permission.
-                    Toast.makeText(this, "permission denied", Toast.LENGTH_LONG).show();
-                }
-            }
-
-        }
-    }
-
     // Called every time a location change is registered by our location request
     LocationCallback mLocationCallback = new LocationCallback() {
         @Override
@@ -265,20 +188,32 @@ public class StartJourneyActivity extends FragmentActivity implements OnMapReady
                 LatLng newLocation = new LatLng(location.getLatitude(), location.getLongitude());
                 // Center the camera on the user
                 moveCamera(newLocation);
-                // Request local weather data from API and update the UI
-                // Only if its the first onLocationResult callback or the device has
-                // travelled at least 10km.
-                if (oldLoc == null) {
-                    oldLoc = newLocation;
-                    getLatLngWeather(newLocation);
-                }
-                else if (distance(oldLoc, newLocation) > 10) {
-                    oldLoc = newLocation;
-                    getLatLngWeather(newLocation);
-                }
             }
         }
     };
+
+    private void startRecordingJourney() {
+        if (ContextCompat.checkSelfPermission(this,
+                Manifest.permission.ACCESS_FINE_LOCATION)
+                == PackageManager.PERMISSION_GRANTED) {
+            recordingJourney = true;
+            // Start RouteSerivce
+            Intent intent = new Intent(this, RouteService.class);
+            startService(intent);
+            bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE);
+        }
+    }
+
+    private void finishRecordingJourney() {
+        recordingJourney = false;
+        showFinishDialog();
+    }
+
+    // Move the camera to the specified latitude and longitude with a default zoom value
+    // @TODO keep users custom zoom value on camera movements if the user tampers with the zoom
+    private void moveCamera(LatLng latLng){
+        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, DEF_ZOOM));
+    }
 
     @Override
     public void updateMap() {
@@ -292,32 +227,8 @@ public class StartJourneyActivity extends FragmentActivity implements OnMapReady
         mMap.addPolyline(polyLine);
     }
 
-    public void getLatLngWeather(LatLng coordinates) {
-        RequestParams params = new RequestParams();
-        params.put("lat", coordinates.latitude);
-        params.put("lon", coordinates.longitude);
-        params.put("appid", APP_ID);
-
-        AsyncHttpClient client = new AsyncHttpClient();
-
-        client.get(WEATHER_URL, params, new JsonHttpResponseHandler() {
-
-            @Override
-            public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
-
-                WeatherInfo weatherData = WeatherInfo.fromJSONObject(response);
-                updateWeatherUI(weatherData);
-            }
-
-            @Override
-            public void onFailure(int statusCode, Header[] headers, Throwable e, JSONObject response) {
-                Toast.makeText(StartJourneyActivity.this,
-                        "HTTP Request Failed", Toast.LENGTH_SHORT).show();
-            }
-        });
-    }
-
-    private void updateWeatherUI(WeatherInfo weather) {
+    @Override
+    public void updateWeather(WeatherInfo weather) {
         mTemperature.setText(weather.getTemperature());
         mCityName.setText(weather.getCityName());
 
@@ -367,8 +278,8 @@ public class StartJourneyActivity extends FragmentActivity implements OnMapReady
         // These are used to fill a dropdown spinner, from which the user picks desired folder
         Bundle args = new Bundle();
         List<Journal> journals = db.journalDao().getAllJournals();
-        ArrayList<String> names = new ArrayList<String>();
-        ArrayList<Integer> ids = new ArrayList<Integer>();
+        ArrayList<String> names = new ArrayList<>();
+        ArrayList<Integer> ids = new ArrayList<>();
 
         for (Journal j : journals) {
             names.add(j.getName());
@@ -381,23 +292,6 @@ public class StartJourneyActivity extends FragmentActivity implements OnMapReady
         // Show a dialog box to specify details of the route
         frag.setArguments(args);
         frag.show(fm, "fragment_save_journey");
-    }
-
-    private void startRecordingJourney() {
-        if (ContextCompat.checkSelfPermission(this,
-                Manifest.permission.ACCESS_FINE_LOCATION)
-                == PackageManager.PERMISSION_GRANTED) {
-            recordingJourney = true;
-            // Start RouteSerivce
-            Intent intent = new Intent(this, RouteService.class);
-            startService(intent);
-            bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE);
-        }
-    }
-
-    private void finishRecordingJourney() {
-        recordingJourney = false;
-        showFinishDialog();
     }
 
     /** Callbacks for service binding, passed to bindService() */
@@ -426,28 +320,79 @@ public class StartJourneyActivity extends FragmentActivity implements OnMapReady
         }
     }
 
+    // Check whether the Location service permission is granted by the OS, and request it if not.
+    public static final int MY_PERMISSIONS_REQUEST_LOCATION = 99;
+    private void checkLocationPermission() {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED) {
+            // App doesn't have location services permission from OS
+
+            // Should we show an explanation?
+            if (ActivityCompat.shouldShowRequestPermissionRationale(this,
+                    Manifest.permission.ACCESS_FINE_LOCATION)) {
+
+                // Show an explanation to the user *asynchronously* -- don't block
+                // this thread waiting for the user's response! After the user
+                // sees the explanation, try again to request the permission.
+                new AlertDialog.Builder(this)
+                        .setTitle("Location Permission Needed")
+                        .setMessage("This app needs the Location permission, please accept to use location functionality")
+                        .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                //Prompt the user once explanation has been shown
+                                ActivityCompat.requestPermissions(StartJourneyActivity.this,
+                                        new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                                        MY_PERMISSIONS_REQUEST_LOCATION );
+                            }
+                        })
+                        .create()
+                        .show();
+
+
+            } else {
+                // No explanation needed, we can request the permission.
+                ActivityCompat.requestPermissions(this,
+                        new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                        MY_PERMISSIONS_REQUEST_LOCATION );
+            }
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           @NonNull String permissions[], @NonNull int[] grantResults) {
+        switch (requestCode) {
+            case MY_PERMISSIONS_REQUEST_LOCATION: {
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+
+                    // permission was granted, yay! Do the
+                    // location-related task you need to do.
+                    if (ContextCompat.checkSelfPermission(this,
+                            Manifest.permission.ACCESS_FINE_LOCATION)
+                            == PackageManager.PERMISSION_GRANTED) {
+
+                        mFusedLocationProviderClient.requestLocationUpdates(locationRequest, mLocationCallback, Looper.myLooper());
+                        mMap.setMyLocationEnabled(true);
+                    }
+
+                } else {
+
+                    // permission denied, boo! Disable the
+                    // functionality that depends on this permission.
+                    Toast.makeText(this, "permission denied", Toast.LENGTH_LONG).show();
+                }
+            }
+
+        }
+    }
+
     @Override
     protected void onSaveInstanceState (Bundle outState) {
         super.onSaveInstanceState(outState);
         outState.putBoolean("KEY_BUTTON_STATE", recordingJourney);
     }
 
-    // calculate the distance between 2 LatLng points, using the Haversine Method without elevation
-    public static double distance(LatLng coord1, LatLng coord2) {
-
-        double lat1 = coord1.latitude, lon1 = coord1.longitude;
-        double lat2 = coord2.latitude, lon2 = coord2.longitude;
-
-        final int R = 6371; // Radius of the earth
-
-        double latDistance = Math.toRadians(lat2 - lat1);
-        double lonDistance = Math.toRadians(lon2 - lon1);
-        double a = Math.sin(latDistance / 2) * Math.sin(latDistance / 2)
-                + Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2))
-                * Math.sin(lonDistance / 2) * Math.sin(lonDistance / 2);
-        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-        double distance = R * c;
-
-        return distance;
-    }
 }

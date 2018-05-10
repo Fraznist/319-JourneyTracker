@@ -1,14 +1,11 @@
 package com.example.eakgun14.journeytracker.RouteService;
 
-import android.location.Location;
-
-import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.maps.model.LatLng;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class RouteManager /* implements Parcelable */{
+public class RouteManager {
     private static final double MAX_ANGLE_VARIATION = 2;
 
     private static RouteManager instance = new RouteManager();
@@ -32,31 +29,22 @@ public class RouteManager /* implements Parcelable */{
     // angle of the line segment between new addition and the element preceding it.
     // If it is mostly in line with angleToMatch, it replaces the last element of the list,
     // and angleToMatch remains unchanged.
-    public void add(LocationResult locationResult) {
+    public void add(LatLng coordinates) {
+        if (route.isEmpty())
+            route.add(coordinates);
+        else if (route.size() == 1) {
+            route.add(coordinates);
+            angleToMatch = angleBetweenLatLng(route.get(0), coordinates);
+        }
+        else {
+            LatLng lineStart = route.get(route.size() - 2);
+            double angle = angleBetweenLatLng(lineStart, coordinates);
 
-        List<Location> locationList = locationResult.getLocations();
-        if (locationList.size() > 0) {
-            //The last location in the list is the newest
-            Location location = locationList.get(locationList.size() - 1);
-            // Only concerned about coordinates
-            LatLng newLoc = new LatLng(location.getLatitude(), location.getLongitude());
-
-            if (route.isEmpty())
-                route.add(newLoc);
-            else if (route.size() == 1) {
-                route.add(newLoc);
-                angleToMatch = angleBetweenLatLng(route.get(0), newLoc);
-            }
+            if (deltaAngle(angleToMatch, angle) < MAX_ANGLE_VARIATION)
+                route.set(route.size() - 1, coordinates);
             else {
-                LatLng lineStart = route.get(route.size() - 2);
-                double angle = angleBetweenLatLng(lineStart, newLoc);
-
-                if (Math.abs(angleToMatch - angle) < MAX_ANGLE_VARIATION)
-                    route.set(route.size() - 1, newLoc);
-                else {
-                    route.add(newLoc);
-                    angleToMatch = angleBetweenLatLng(route.get(route.size() - 2), newLoc);
-                }
+                route.add(coordinates);
+                angleToMatch = angleBetweenLatLng(route.get(route.size() - 2), coordinates);
             }
         }
     }
@@ -64,6 +52,11 @@ public class RouteManager /* implements Parcelable */{
     private static double angleBetweenLatLng(LatLng start, LatLng fin) {
         double rad = Math.atan2(fin.longitude - start.longitude, fin.latitude - start.latitude);
         return Math.toDegrees(rad);
+    }
+
+    private static double deltaAngle(double a1, double a2) {
+        double phi = Math.abs(a1 - a2);
+        return phi > 180 ? 360 - phi : phi;
     }
 
     public List<LatLng> getRoute() {
