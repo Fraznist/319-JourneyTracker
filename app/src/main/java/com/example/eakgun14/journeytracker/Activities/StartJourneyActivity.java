@@ -1,27 +1,33 @@
 package com.example.eakgun14.journeytracker.Activities;
 
 import android.Manifest;
+import android.app.Activity;
 import android.app.AlertDialog;
+import android.arch.persistence.db.SupportSQLiteDatabase;
 import android.arch.persistence.room.Room;
+import android.arch.persistence.room.migration.Migration;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
-import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.location.Location;
+import android.net.Uri;
 import android.os.Build;
 import android.os.IBinder;
 import android.os.Looper;
+import android.provider.MediaStore;
 import android.support.annotation.NonNull;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.content.ContextCompat;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -30,6 +36,7 @@ import android.widget.Toast;
 
 import com.example.eakgun14.journeytracker.DataTypes.Journal;
 import com.example.eakgun14.journeytracker.DataTypes.Journey;
+import com.example.eakgun14.journeytracker.RouteService.CameraManager;
 import com.example.eakgun14.journeytracker.RouteService.RouteManager;
 import com.example.eakgun14.journeytracker.DataTypes.WeatherInfo;
 import com.example.eakgun14.journeytracker.Dialogs.NewJourneyDialogFragment;
@@ -63,15 +70,16 @@ public class StartJourneyActivity extends FragmentActivity implements OnMapReady
     private ImageView mWeatherImage;
 
     // google map fields
-    private LocationRequest locationRequest;
-    private GoogleMap mMap;
     private FusedLocationProviderClient mFusedLocationProviderClient;
+    private LocationRequest locationRequest;
+    private LocationCallback mLocationCallback;
+    private GoogleMap mMap;
 
     // other fields
     private RouteManager routeManager;
+    private CameraManager cameraManager;
     private RouteService routeService;
     private boolean routeServiceBound = false;
-//    private LatLng oldLoc = null;
     private Boolean recordingJourney = false;
     private AppDatabase db;
 
@@ -80,10 +88,14 @@ public class StartJourneyActivity extends FragmentActivity implements OnMapReady
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_start_journey);
 
-        // Restore saved state so that a route being recorded isn't lost on orientation change
-        loadPrefs();
+        // Check if route service is running. If so, change activity state.
+        if (RouteService.serviceRunning)
+            recordingJourney = true;
+
 
         routeManager = RouteManager.getInstance();
+        cameraManager = CameraManager.getInstance();
+        cameraManager.setContext(this.getApplicationContext());
 
         mFusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
 
@@ -105,6 +117,14 @@ public class StartJourneyActivity extends FragmentActivity implements OnMapReady
                     startRecordingJourney();
                     mapButton.setText(R.string.finish_journey);
                 }
+            }
+        });
+
+        final FloatingActionButton camButton = findViewById(R.id.take_photo_button);
+        camButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                takePhoto();
             }
         });
 
@@ -136,12 +156,6 @@ public class StartJourneyActivity extends FragmentActivity implements OnMapReady
     }
 
     @Override
-    protected void onDestroy() {
-        savePrefs();
-        super.onDestroy();
-    }
-
-    @Override
     public void onMapReady(GoogleMap googleMap) {
         Toast.makeText(this, "Map is Ready", Toast.LENGTH_SHORT).show();
 
@@ -154,6 +168,22 @@ public class StartJourneyActivity extends FragmentActivity implements OnMapReady
                 .setFastestInterval(1)
                 .setSmallestDisplacement(5)
                 .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+
+        // Called every time a location change is registered by our location request
+        mLocationCallback = new LocationCallback() {
+            @Override
+            public void onLocationResult(LocationResult locationResult) {
+                List<Location> locationList = locationResult.getLocations();
+                if (locationList.size() > 0) {
+                    //The last location in the list is the newest
+                    Location location = locationList.get(locationList.size() - 1);
+                    // Only concerned about coordinates
+                    LatLng newLocation = new LatLng(location.getLatitude(), location.getLongitude());
+                    // Center the camera on the user
+                    moveCamera(newLocation);
+                }
+            }
+        };
 
         if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             if (ContextCompat.checkSelfPermission(this,
@@ -174,22 +204,6 @@ public class StartJourneyActivity extends FragmentActivity implements OnMapReady
             mMap.setMyLocationEnabled(true);
         }
     }
-
-    // Called every time a location change is registered by our location request
-    LocationCallback mLocationCallback = new LocationCallback() {
-        @Override
-        public void onLocationResult(LocationResult locationResult) {
-            List<Location> locationList = locationResult.getLocations();
-            if (locationList.size() > 0) {
-                //The last location in the list is the newest
-                Location location = locationList.get(locationList.size() - 1);
-                // Only concerned about coordinates
-                LatLng newLocation = new LatLng(location.getLatitude(), location.getLongitude());
-                // Center the camera on the user
-                moveCamera(newLocation);
-            }
-        }
-    };
 
     private void startRecordingJourney() {
         if (ContextCompat.checkSelfPermission(this,
@@ -236,38 +250,6 @@ public class StartJourneyActivity extends FragmentActivity implements OnMapReady
         mWeatherImage.setImageResource(resourceID);
     }
 
-    // NoticeDialogListener Callback
-    @Override
-    public void onDialogClick(DialogFragment dialog) {
-
-        // Store the recorded route into the database, with the name, description, and folder
-        // Specified in the dialog box.
-        try {
-            NewJourneyDialogFragment dial = (NewJourneyDialogFragment) dialog;
-
-            String name = dial.getNameText().getText().toString();
-            String desc = dial.getDescText().getText().toString();
-
-            Integer j_id = dial.getSelectedJournalID();
-
-            // Serialize list of points into a JSON string.
-            Gson gson = new Gson();
-            String json = gson.toJson(routeManager.getRoute());
-
-            // Insert into database.
-            Journey j = new Journey(name, desc, j_id, json);
-            db.journeyDao().insertAll(j);
-
-            routeManager.clear();
-
-            stopRouteService();
-        }
-        catch (ClassCastException e) {
-            throw new ClassCastException(dialog.toString()
-                    + " must extend NewJourneyDialogFragment");
-        }
-    }
-
     private void showFinishDialog() {
         FragmentManager fm = getSupportFragmentManager();
         DialogFragment frag =  new NewJourneyDialogFragment();
@@ -291,6 +273,41 @@ public class StartJourneyActivity extends FragmentActivity implements OnMapReady
         // Show a dialog box to specify details of the route
         frag.setArguments(args);
         frag.show(fm, "fragment_save_journey");
+    }
+
+    // NoticeDialogListener Callback
+    @Override
+    public void onDialogClick(DialogFragment dialog) {
+
+        // Store the recorded route into the database, with the name, description, and folder
+        // Specified in the dialog box.
+        try {
+            NewJourneyDialogFragment dial = (NewJourneyDialogFragment) dialog;
+
+            String name = dial.getNameText().getText().toString();
+            String desc = dial.getDescText().getText().toString();
+
+            Integer j_id = dial.getSelectedJournalID();
+
+            // Serialize list of points into a JSON string.
+            Gson gson = new Gson();
+            String json = gson.toJson(routeManager.getRoute());
+            String photosJson = gson.toJson(cameraManager.getImageUriList());
+            Log.d("serialize", photosJson);
+
+            // Insert into database.
+            Journey j = new Journey(name, desc, j_id, json, photosJson);
+            db.journeyDao().insertAll(j);
+
+            routeManager.clear();
+            cameraManager.clear();
+
+            stopRouteService();
+        }
+        catch (ClassCastException e) {
+            throw new ClassCastException(dialog.toString()
+                    + " must extend NewJourneyDialogFragment");
+        }
     }
 
     /** Callbacks for service binding, passed to bindService() */
@@ -388,15 +405,24 @@ public class StartJourneyActivity extends FragmentActivity implements OnMapReady
         }
     }
 
-    private void savePrefs() {
-        SharedPreferences sp = getPreferences(MODE_PRIVATE);
-        SharedPreferences.Editor editor = sp.edit();
-        editor.putBoolean("KEY_BUTTON_STATE", recordingJourney);
-        editor.apply();
+    private static final int TAKE_PICTURE = 5555;
+    public void takePhoto() {
+        if (recordingJourney && !routeManager.isRouteEmpty()) {
+            Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+            Uri uri = cameraManager.setImageUri();
+            intent.putExtra(MediaStore.EXTRA_OUTPUT, uri);
+            startActivityForResult(intent, TAKE_PICTURE);
+        }
     }
 
-    private void loadPrefs() {
-        SharedPreferences sp = getPreferences(MODE_PRIVATE);
-        recordingJourney = sp.getBoolean("KEY_BUTTON_STATE", false);
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        switch (requestCode) {
+            case TAKE_PICTURE :
+                if (resultCode == Activity.RESULT_OK) {
+                    cameraManager.cacheImage(routeManager.getLast());
+                }
+        }
     }
 }

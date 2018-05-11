@@ -31,5 +31,6 @@
     <string name="journey_dialog_namefield">İsim</string>
     <string name="journey_dialog_descfield">Açıklama</string>
     <string name="dialog_show_journey_on_map">Haritada Göster</string>
+    <string name="dialog_show_journey_pictures">Resimler</string>
     <string name="dialog_create_journal">New Journal</string>
 </resources>

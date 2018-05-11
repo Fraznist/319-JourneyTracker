@@ -32,11 +32,15 @@ public class Journey implements Journable {
     @ColumnInfo(name = "route")
     private String route;
 
-    public Journey(String name, String description, Integer journal_id, String route) {
+    @ColumnInfo(name = "coordinate_photos")
+    private String coordinate_photos;
+
+    public Journey(String name, String description, Integer journal_id, String route, String coordinate_photos) {
         this.name = name;
         this.description = description;
         this.journal_id = journal_id;
         this.route = route;
+        this.coordinate_photos = coordinate_photos;
     }
 
     public String getName() {
@@ -49,10 +53,6 @@ public class Journey implements Journable {
 
     public Integer getJournal_id() {
         return journal_id;
-    }
-
-    public void setJournal_id(Integer journal_id) {
-        this.journal_id = journal_id;
     }
 
     public void setName(String name) {
@@ -79,7 +79,7 @@ public class Journey implements Journable {
         return route;
     }
 
-    public void setRoute(String route) {
-        this.route = route;
+    public String getCoordinate_photos() {
+        return coordinate_photos;
     }
 }

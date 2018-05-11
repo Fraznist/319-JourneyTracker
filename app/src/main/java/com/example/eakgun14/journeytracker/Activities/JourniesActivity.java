@@ -12,7 +12,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
@@ -23,7 +22,7 @@ import com.example.eakgun14.journeytracker.Adapters.LightManagerAdapter;
 import com.example.eakgun14.journeytracker.DataTypes.Journable;
 import com.example.eakgun14.journeytracker.DataTypes.Journey;
 import com.example.eakgun14.journeytracker.Adapters.JournableAdapterListener;
-import com.example.eakgun14.journeytracker.Dialogs.NoticeDialogListener;
+import com.example.eakgun14.journeytracker.Dialogs.NoticeDialogListener2;
 import com.example.eakgun14.journeytracker.Dialogs.ViewJourneyDialogFragment;
 import com.example.eakgun14.journeytracker.LocalDatabase.AppDatabase;
 import com.example.eakgun14.journeytracker.R;
@@ -31,7 +30,8 @@ import com.example.eakgun14.journeytracker.R;
 import java.util.Arrays;
 import java.util.List;
 
-public class JourniesActivity extends AppCompatActivity implements JournableAdapterListener, SensorEventListener, NoticeDialogListener {
+public class JourniesActivity extends AppCompatActivity implements JournableAdapterListener,
+        SensorEventListener, NoticeDialogListener2 {
 
     AppDatabase db;
 
@@ -162,6 +162,7 @@ public class JourniesActivity extends AppCompatActivity implements JournableAdap
         args.putString("name", j.getName());
         args.putString("description", j.getDescription());
         args.putString("route", j.getRoute());
+        args.putString("photos", j.getCoordinate_photos());
         frag.setArguments(args);
 
         frag.show(fm, "fragment_view_journey_info");
@@ -201,5 +202,14 @@ public class JourniesActivity extends AppCompatActivity implements JournableAdap
         // NoticeDialogListener callback,
         // display the route that is stored in the dialogFragment
         startViewJournesActivity( ((ViewJourneyDialogFragment) dialog).getRoute() );
+    }
+
+    @Override
+    public void onSecondaryDialogClick(DialogFragment dialog) {
+        ViewJourneyDialogFragment dial = (ViewJourneyDialogFragment) dialog;
+        Intent intent = new Intent(JourniesActivity.this, PhotoViewActivity.class);
+        intent.putExtra("Journey Name", dial.getName());
+        intent.putExtra("URI JSON", dial.getPhotos());
+        startActivity(intent);
     }
 }

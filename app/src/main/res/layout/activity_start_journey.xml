@@ -37,6 +37,18 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
 
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/take_photo_button"
+        android:layout_width="64dp"
+        android:layout_height="64dp"
+        android:layout_marginBottom="16dp"
+        android:clickable="true"
+        android:src="@android:drawable/ic_menu_camera"
+        android:visibility="visible"
+        app:backgroundTint="#81c784"
+        app:layout_constraintBottom_toTopOf="@+id/start_tracking_button"
+        app:layout_constraintEnd_toEndOf="@+id/start_tracking_button" />
+
     <ImageView
         android:id="@+id/start_journey_weather_icon"
         android:layout_width="56dp"

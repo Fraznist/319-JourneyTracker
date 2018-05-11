@@ -23,7 +23,7 @@ public class JournableAdapter extends RecyclerView.Adapter<JournableAdapter.View
     private List<Journable> Journables; // Journables currently shown in the RecyclerView
     private List<Journable> selectedJournables; // Journables that have their checkbox checked
     private List<Journable> JournablesToAdd;    // Journables scheduled to be stored on db
-    private List<Journable> JournablesToDelete; // Journables scheduled to bre removed from db
+    private List<Journable> JournablesToDelete; // Journables scheduled to be removed from db
     private JournableAdapterListener jact;  // reference to the calling activity
 
     public JournableAdapter(Journable[] jjs, JournableAdapterListener ja) {

@@ -3,6 +3,7 @@
     package="com.example.eakgun14.journeytracker">
 
     <!-- To auto-complete the email text field in the login form with the user's emails -->
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.GET_ACCOUNTS" />
     <uses-permission android:name="android.permission.READ_PROFILE" />
     <uses-permission android:name="android.permission.READ_CONTACTS" />
@@ -17,7 +18,6 @@
          Google Maps Android API v2, but you must specify either coarse or fine
          location permissions for the 'MyLocation' functionality. 
     -->
-
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -55,7 +55,9 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.example.eakgun14.journeytracker.Activities.MainActivity" />
         </activity>
+
         <service android:name=".RouteService.RouteService" />
+
         <activity
             android:name=".Activities.JournalsActivity"
             android:label="@string/title_activity_journals"
@@ -79,7 +81,8 @@
             android:screenOrientation="portrait" />
         <activity
             android:name=".Activities.ViewJourniesActivity"
-            android:label="@string/title_activity_view_journies"></activity>
+            android:label="@string/title_activity_view_journies" />
+        <activity android:name=".Activities.PhotoViewActivity"></activity>
     </application>
 
 </manifest>

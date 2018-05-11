@@ -67,4 +67,12 @@ public class RouteManager {
         route.clear();
         angleToMatch = 0;
     }
+
+    public LatLng getLast() {
+        return route.get(route.size() - 1);
+    }
+
+    public boolean isRouteEmpty() {
+        return route.isEmpty();
+    }
 }

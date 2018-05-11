@@ -17,33 +17,41 @@ import com.example.eakgun14.journeytracker.R;
 public class ViewJourneyDialogFragment extends DialogFragment {
 
     // Use this instance of the interface to deliver action events
-    private NoticeDialogListener mListener;
+    private NoticeDialogListener2 mListener;
 
-    EditText description;
-    Button viewButton;
-
-    String route;
+    private String name;
+    private String route;
+    private String photos;
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
 
-        String name = getArguments().getString("name");
+        name = getArguments().getString("name");
         String desc = getArguments().getString("description");
         route = getArguments().getString("route");
+        photos = getArguments().getString("photos");
 
         LayoutInflater inflater = getActivity().getLayoutInflater();
         View view = inflater.inflate(R.layout.dialog_view_journey_info, null);
 
-        description = view.findViewById(R.id.dialog_view_journey_description);
+        EditText description = view.findViewById(R.id.dialog_view_journey_description);
         description.setText(desc.toString());
         description.setFocusable(false);
 
-        viewButton = view.findViewById(R.id.dialog_view_journey_view);
+        Button viewButton = view.findViewById(R.id.dialog_view_journey_view);
         viewButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 mListener.onDialogClick(ViewJourneyDialogFragment.this);
+            }
+        });
+
+        Button photoButton = view.findViewById(R.id.dialog_view_journey_photos);
+        photoButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mListener.onSecondaryDialogClick(ViewJourneyDialogFragment.this);
             }
         });
 
@@ -59,7 +67,7 @@ public class ViewJourneyDialogFragment extends DialogFragment {
         // Verify that the host activity implements the callback interface
         try {
             // Instantiate the NoticeDialogListener so we can send events to the host
-            mListener = (NoticeDialogListener) context;
+            mListener = (NoticeDialogListener2) context;
         } catch (ClassCastException e) {
             // The activity doesn't implement the interface, throw exception
             throw new ClassCastException(context.toString()
@@ -75,7 +83,7 @@ public class ViewJourneyDialogFragment extends DialogFragment {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
             try {
                 // Instantiate the NoticeDialogListener so we can send events to the host
-                mListener = (NoticeDialogListener) activity;
+                mListener = (NoticeDialogListener2) activity;
             } catch (ClassCastException e) {
                 // The activity doesn't implement the interface, throw exception
                 throw new ClassCastException(activity.toString()
@@ -86,5 +94,13 @@ public class ViewJourneyDialogFragment extends DialogFragment {
 
     public String getRoute() {
         return route;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getPhotos() {
+        return photos;
     }
 }

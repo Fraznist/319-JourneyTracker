@@ -24,6 +24,7 @@ public class RouteService extends Service implements WeatherListener {
     private final IBinder binder = new LocalBinder();
     // Registered callbacks
     private RouteServiceCallbacks serviceCallbacks;
+    public static boolean serviceRunning = false;
 
     private RouteManager routeManager;
     private WeatherManager weatherManager;
@@ -59,12 +60,15 @@ public class RouteService extends Service implements WeatherListener {
                 .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
         mFusedLocationProviderClient.requestLocationUpdates(mLocationRequest, mLocationCallback, Looper.myLooper());
 
+        serviceRunning = true;
+
         return START_NOT_STICKY;
     }
 
     @Override
     public void onDestroy() {
         Toast.makeText(this, "RouteService stopped!", Toast.LENGTH_SHORT).show();
+        serviceRunning = false;
         super.onDestroy();
     }
 
