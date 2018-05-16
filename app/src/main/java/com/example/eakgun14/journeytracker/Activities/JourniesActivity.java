@@ -26,6 +26,7 @@ import com.example.eakgun14.journeytracker.Dialogs.NoticeDialogListener2;
 import com.example.eakgun14.journeytracker.Dialogs.ViewJourneyDialogFragment;
 import com.example.eakgun14.journeytracker.LocalDatabase.AppDatabase;
 import com.example.eakgun14.journeytracker.R;
+import com.example.eakgun14.journeytracker.RouteService.AudioManager;
 
 import java.util.Arrays;
 import java.util.List;
@@ -41,9 +42,7 @@ public class JourniesActivity extends AppCompatActivity implements JournableAdap
     int journalID;
     String journalName;
 
-    private RecyclerView recyclerView;
     private JournableAdapter adapter;
-    private RecyclerView.LayoutManager layoutMgr;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -86,10 +85,10 @@ public class JourniesActivity extends AppCompatActivity implements JournableAdap
         }
 
 
-        recyclerView = findViewById(R.id.journies_recycler_view);
+        RecyclerView recyclerView = findViewById(R.id.journies_recycler_view);
         recyclerView.setHasFixedSize(true);
 
-        layoutMgr = new LinearLayoutManager(this);
+        RecyclerView.LayoutManager layoutMgr = new LinearLayoutManager(this);
         adapter = new JournableAdapter(journies, this);
         recyclerView.setLayoutManager(layoutMgr);
         recyclerView.setAdapter(adapter);

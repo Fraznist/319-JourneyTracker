@@ -14,6 +14,7 @@ import android.graphics.Color;
 import android.location.Location;
 import android.net.Uri;
 import android.os.Build;
+import android.os.Environment;
 import android.os.IBinder;
 import android.os.Looper;
 import android.provider.MediaStore;
@@ -34,11 +35,12 @@ import android.widget.Toast;
 
 import com.example.eakgun14.journeytracker.DataTypes.Journal;
 import com.example.eakgun14.journeytracker.DataTypes.Journey;
+import com.example.eakgun14.journeytracker.Dialogs.NoticeDialogListener2;
+import com.example.eakgun14.journeytracker.RouteService.AudioManager;
 import com.example.eakgun14.journeytracker.RouteService.CameraManager;
 import com.example.eakgun14.journeytracker.RouteService.RouteManager;
 import com.example.eakgun14.journeytracker.DataTypes.WeatherInfo;
 import com.example.eakgun14.journeytracker.Dialogs.NewJourneyDialogFragment;
-import com.example.eakgun14.journeytracker.Dialogs.NoticeDialogListener;
 import com.example.eakgun14.journeytracker.LocalDatabase.AppDatabase;
 import com.example.eakgun14.journeytracker.R;
 import com.example.eakgun14.journeytracker.RouteService.RouteService;
@@ -56,11 +58,12 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.gson.Gson;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
 public class StartJourneyActivity extends FragmentActivity implements OnMapReadyCallback,
-        NoticeDialogListener, RouteServiceCallbacks {
+        NoticeDialogListener2, RouteServiceCallbacks {
 
     // UI objects
     private TextView mTemperature;
@@ -76,6 +79,7 @@ public class StartJourneyActivity extends FragmentActivity implements OnMapReady
     // other fields
     private RouteManager routeManager;
     private CameraManager cameraManager;
+    private AudioManager audioManager;
     private RouteService routeService;
     private boolean routeServiceBound = false;
     private Boolean recordingJourney = false;
@@ -300,12 +304,39 @@ public class StartJourneyActivity extends FragmentActivity implements OnMapReady
             routeManager.clear();
             cameraManager.clear();
 
+            changeAudioFileName(name);
+
             stopRouteService();
         }
         catch (ClassCastException e) {
             throw new ClassCastException(dialog.toString()
                     + " must extend NewJourneyDialogFragment");
         }
+    }
+
+    @Override
+    public void onSecondaryDialogClick(DialogFragment dialog) {
+        checkAudioPermission();
+
+        if (audioManager == null)
+            audioManager = new AudioManager(this.getApplicationContext());
+
+        audioManager.onRecord("tempAudio");
+    }
+
+    private void changeAudioFileName(String newJourneyName) {
+        String sourceName = "tempAudio";
+        File parentDirectory = this.getExternalFilesDir(Environment.DIRECTORY_MUSIC);
+
+        File sourceAudio = new File(parentDirectory, sourceName);
+
+        if(!sourceAudio.exists())
+            return;
+
+        if (sourceAudio.renameTo(new File(parentDirectory, newJourneyName)))
+            Log.d("rename", "YE BOIII");
+        else
+            Log.d("rename", "no boi :(");
     }
 
     /** Callbacks for service binding, passed to bindService() */
@@ -359,16 +390,47 @@ public class StartJourneyActivity extends FragmentActivity implements OnMapReady
                                         new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
                                         MY_PERMISSIONS_REQUEST_LOCATION );
                             }
-                        })
-                        .create()
-                        .show();
-
-
+                        }).create().show();
             } else {
                 // No explanation needed, we can request the permission.
                 ActivityCompat.requestPermissions(this,
                         new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
                         MY_PERMISSIONS_REQUEST_LOCATION );
+            }
+        }
+    }
+
+    // Check whether the audio recording permission is granted by the OS, and request it if not.
+    public static final int MY_PERMISSIONS_RECORD_AUDIO = 88;
+    private void checkAudioPermission() {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO)
+                != PackageManager.PERMISSION_GRANTED) {
+            // App doesn't have location services permission from OS
+
+            // Should we show an explanation?
+            if (ActivityCompat.shouldShowRequestPermissionRationale(this,
+                    Manifest.permission.RECORD_AUDIO)) {
+
+                // Show an explanation to the user *asynchronously* -- don't block
+                // this thread waiting for the user's response! After the user
+                // sees the explanation, try again to request the permission.
+                new AlertDialog.Builder(this)
+                        .setTitle("Location Permission Needed")
+                        .setMessage("This app needs the record audio permission, please accept to use location functionality")
+                        .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                //Prompt the user once explanation has been shown
+                                ActivityCompat.requestPermissions(StartJourneyActivity.this,
+                                        new String[]{Manifest.permission.RECORD_AUDIO},
+                                        MY_PERMISSIONS_RECORD_AUDIO );
+                            }
+                        }).create().show();
+            } else {
+                // No explanation needed, we can request the permission.
+                ActivityCompat.requestPermissions(this,
+                        new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                        MY_PERMISSIONS_RECORD_AUDIO );
             }
         }
     }
@@ -399,11 +461,17 @@ public class StartJourneyActivity extends FragmentActivity implements OnMapReady
                     Toast.makeText(this, "permission denied", Toast.LENGTH_LONG).show();
                 }
             }
-
+            case MY_PERMISSIONS_RECORD_AUDIO: {
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    break;
+                }
+                else finish();
+            }
         }
     }
 
-     private static final int TAKE_PICTURE = 5555;
+    private static final int TAKE_PICTURE = 5555;
     public void takePhoto() {
         if (recordingJourney && !routeManager.isRouteEmpty()) {
             Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);

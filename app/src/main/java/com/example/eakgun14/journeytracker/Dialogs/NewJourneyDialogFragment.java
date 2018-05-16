@@ -12,6 +12,7 @@ import android.support.v4.app.FragmentManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
 
@@ -25,11 +26,13 @@ import java.util.List;
 public class NewJourneyDialogFragment extends DialogFragment {
 
     // Use this instance of the interface to deliver action events
-    private NoticeDialogListener mListener;
+    private NoticeDialogListener2 mListener;
 
     private EditText nameText;
     private EditText descText;
     private Spinner journalSpinner;
+    private Button record;
+    private Button save;
     private ArrayList<Integer> ids;
 
     @Override
@@ -41,6 +44,23 @@ public class NewJourneyDialogFragment extends DialogFragment {
         nameText = view.findViewById(R.id.dialog_create_journal_name);
         descText = view.findViewById(R.id.dialog_journey_save_description);
         journalSpinner = view.findViewById(R.id.dialog_save_journey_spinner);
+
+        record = view.findViewById(R.id.dialog_save_journey_record);
+        record.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mListener.onSecondaryDialogClick(NewJourneyDialogFragment.this);
+            }
+        });
+
+        save = view.findViewById(R.id.dialog_save_journey_button);
+        save.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mListener.onDialogClick(NewJourneyDialogFragment.this);
+                getDialog().dismiss();
+            }
+        });
 
         ArrayList<String> names = getArguments().getStringArrayList("journal names");
         ids = getArguments().getIntegerArrayList("journal ids");
@@ -57,14 +77,7 @@ public class NewJourneyDialogFragment extends DialogFragment {
         journalSpinner.setAdapter(adapter);
 
         builder.setTitle(R.string.journey_dialog_title)
-                .setView(view)
-                // trigger parent actvity callback
-                .setNeutralButton(R.string.journey_dialog_save, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        mListener.onDialogClick(NewJourneyDialogFragment.this);
-                    }
-                });
+                .setView(view);
 
         return builder.create();
     }
@@ -75,7 +88,7 @@ public class NewJourneyDialogFragment extends DialogFragment {
         // Verify that the host activity implements the callback interface
         try {
             // Instantiate the NoticeDialogListener so we can send events to the host
-            mListener = (NoticeDialogListener) context;
+            mListener = (NoticeDialogListener2) context;
         } catch (ClassCastException e) {
             // The activity doesn't implement the interface, throw exception
             throw new ClassCastException(context.toString()
@@ -91,7 +104,7 @@ public class NewJourneyDialogFragment extends DialogFragment {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
             try {
                 // Instantiate the NoticeDialogListener so we can send events to the host
-                mListener = (NoticeDialogListener) activity;
+                mListener = (NoticeDialogListener2) activity;
             } catch (ClassCastException e) {
                 // The activity doesn't implement the interface, throw exception
                 throw new ClassCastException(activity.toString()
