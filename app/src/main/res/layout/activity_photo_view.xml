@@ -60,7 +60,7 @@
         android:layout_marginTop="8dp"
         android:columnWidth="90dp"
         android:gravity="center"
-        android:horizontalSpacing="10dp"
+        android:horizontalSpacing="5dp"
         android:numColumns="auto_fit"
         android:verticalSpacing="10dp"
         app:layout_constraintBottom_toBottomOf="parent"

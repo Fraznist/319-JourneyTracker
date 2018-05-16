@@ -35,11 +35,7 @@ public class JournalsActivity extends AppCompatActivity implements JournableAdap
 
     private LightManagerAdapter lightManager;
 
-    private Journal[] journals;
-
-    private RecyclerView recyclerView;
     private JournableAdapter adapter;
-    private RecyclerView.LayoutManager layoutMgr;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,15 +51,15 @@ public class JournalsActivity extends AppCompatActivity implements JournableAdap
         actBar.setDisplayHomeAsUpEnabled(true);
 
         db = Room.databaseBuilder(getApplicationContext(), AppDatabase.class, "production")
-                .allowMainThreadQueries().fallbackToDestructiveMigration()
+                .allowMainThreadQueries()//.fallbackToDestructiveMigration()
                 .build();
 
         Object[] temp = db.journalDao().getAllJournals().toArray();
-        journals = Arrays.copyOf(temp, temp.length, Journal[].class);
+        Journal[] journals = Arrays.copyOf(temp, temp.length, Journal[].class);
 
-        recyclerView = findViewById(R.id.recyclerView);
+        RecyclerView recyclerView = findViewById(R.id.recyclerView);
         recyclerView.setHasFixedSize(true);
-        layoutMgr = new LinearLayoutManager(this);
+        RecyclerView.LayoutManager layoutMgr = new LinearLayoutManager(this);
         adapter = new JournableAdapter(journals, this);
         recyclerView.setLayoutManager(layoutMgr);
         recyclerView.setAdapter(adapter);

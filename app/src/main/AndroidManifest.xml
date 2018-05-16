@@ -4,6 +4,7 @@
 
     <!-- To auto-complete the email text field in the login form with the user's emails -->
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.GET_ACCOUNTS" />
     <uses-permission android:name="android.permission.READ_PROFILE" />
     <uses-permission android:name="android.permission.READ_CONTACTS" />
@@ -82,7 +83,14 @@
         <activity
             android:name=".Activities.ViewJourniesActivity"
             android:label="@string/title_activity_view_journies" />
-        <activity android:name=".Activities.PhotoViewActivity"></activity>
+        <activity
+            android:name=".Activities.PhotoViewActivity"
+            android:parentActivityName=".Activities.JourniesActivity"
+            android:theme="@style/AppTheme.NoActionBar">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.example.eakgun14.journeytracker.Activities.JourniesActivity" />
+        </activity>
     </application>
 
 </manifest>

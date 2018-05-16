@@ -1,14 +1,9 @@
 package com.example.eakgun14.journeytracker.Activities;
 
-import android.Manifest;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.graphics.Color;
-import android.support.annotation.NonNull;
-import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
-import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -19,19 +14,15 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
-import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
-import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
 
 public class ViewJourniesActivity extends FragmentActivity implements OnMapReadyCallback, GoogleMap.OnMapLoadedCallback {
-
-    private static final String TAG = "ViewJourniesActivity";
 
     private GoogleMap mMap;
     private List<List<LatLng>> routeList;
@@ -51,12 +42,13 @@ public class ViewJourniesActivity extends FragmentActivity implements OnMapReady
         Random rand = new Random();
         i = rand.nextInt(6);
 
-        routeList = new LinkedList<List<LatLng>>();
+        routeList = new LinkedList<>();
 
         // deserialize every JSON file into a list of LatLng coordinates
         Gson gson = new Gson();
         for (int i = 0; i < routes.length; i++) {
             List<LatLng> latLngList = gson.fromJson(routes[i], new TypeToken<List<LatLng>>(){}.getType());
+            Log.d("route", "size of route " + i + ": " + latLngList.size());
             routeList.add(latLngList);
         }
 
@@ -79,7 +71,6 @@ public class ViewJourniesActivity extends FragmentActivity implements OnMapReady
     @Override
     public void onMapReady(GoogleMap googleMap) {
         Toast.makeText(this, "Map is Ready", Toast.LENGTH_SHORT).show();
-        Log.d(TAG, "onMapReady: map is ready");
         mMap = googleMap;
         mMap.setOnMapLoadedCallback(this);
     }

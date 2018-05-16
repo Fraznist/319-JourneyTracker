@@ -24,7 +24,8 @@ public class CameraManager {
     private static final CameraManager instance = new CameraManager();
 
     private List<LatLngURIPair> imageUriList = new ArrayList<>();
-    private Uri extPhotoUri;
+//    private Uri extPhotoUri;
+    private String photoName;
     private Context ctx;
 
     public static CameraManager getInstance() {
@@ -37,13 +38,15 @@ public class CameraManager {
 
     public Uri setImageUri() {
         String timeStamp = new Date().toString();
-        File extPhoto = new File(Environment.getExternalStorageDirectory(),  "IMG_" + timeStamp + ".jpg");
-        extPhotoUri = Uri.fromFile(extPhoto);
+        photoName = "IMG_" + timeStamp + ".jpg";
+        File extPhoto = new File(ctx.getExternalFilesDir(Environment.DIRECTORY_DCIM),  photoName);
+        Uri extPhotoUri = Uri.fromFile(extPhoto);
         return extPhotoUri;
     }
 
     public void cacheImage(LatLng coords) {
-        imageUriList.add(new LatLngURIPair(coords, extPhotoUri.toString()));
+        Log.d("saveloc", photoName/*extPhotoUri.toString()*/);
+        imageUriList.add(new LatLngURIPair(coords, photoName/*extPhotoUri.toString()*/));
     }
 
     public List<LatLngURIPair> getImageUriList() {
@@ -51,7 +54,8 @@ public class CameraManager {
     }
 
     public void clear() {
-        extPhotoUri = null;
+//        extPhotoUri = null;
+        photoName = null;
         imageUriList.clear();
     }
 }

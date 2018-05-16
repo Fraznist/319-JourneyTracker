@@ -3,9 +3,7 @@ package com.example.eakgun14.journeytracker.Activities;
 import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.arch.persistence.db.SupportSQLiteDatabase;
 import android.arch.persistence.room.Room;
-import android.arch.persistence.room.migration.Migration;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -405,7 +403,7 @@ public class StartJourneyActivity extends FragmentActivity implements OnMapReady
         }
     }
 
-    private static final int TAKE_PICTURE = 5555;
+     private static final int TAKE_PICTURE = 5555;
     public void takePhoto() {
         if (recordingJourney && !routeManager.isRouteEmpty()) {
             Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
@@ -420,9 +418,8 @@ public class StartJourneyActivity extends FragmentActivity implements OnMapReady
         super.onActivityResult(requestCode, resultCode, data);
         switch (requestCode) {
             case TAKE_PICTURE :
-                if (resultCode == Activity.RESULT_OK) {
+                if (resultCode == Activity.RESULT_OK)
                     cameraManager.cacheImage(routeManager.getLast());
-                }
         }
     }
 }
