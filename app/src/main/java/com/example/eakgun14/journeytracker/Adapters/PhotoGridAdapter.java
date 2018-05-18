@@ -1,19 +1,22 @@
 package com.example.eakgun14.journeytracker.Adapters;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.media.Image;
-import android.net.Uri;
+import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Environment;
+import android.util.AttributeSet;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.Checkable;
 import android.widget.GridView;
 import android.widget.ImageView;
 
-import com.example.eakgun14.journeytracker.DataTypes.LatLngURIPair;
+import com.example.eakgun14.journeytracker.DataTypes.LatLngNamePair;
 import com.example.eakgun14.journeytracker.R;
 
 import java.io.File;
@@ -22,24 +25,25 @@ import java.util.List;
 
 public class PhotoGridAdapter extends BaseAdapter {
 
-    private File parentDirectory;
     private Context mContext;
-    private List<LatLngURIPair> pairs;
+    private DynamicViewManager<LatLngNamePair> viewManager;
+    private ViewAdapterListener<LatLngNamePair> listener;
 
-    public PhotoGridAdapter(Context c, List<LatLngURIPair> paar) {
+    public PhotoGridAdapter(Context c, ViewAdapterListener<LatLngNamePair> listen,
+                            List<LatLngNamePair> pairs) {
         mContext = c;
-        pairs = paar;
-        parentDirectory = c.getExternalFilesDir(Environment.DIRECTORY_DCIM);
+        listener = listen;
+        viewManager = new DynamicViewManager<>(pairs);
     }
 
     @Override
     public int getCount() {
-        return pairs.size();
+        return viewManager.size();
     }
 
     @Override
     public Object getItem(int position) {
-        return pairs.get(position);
+        return viewManager.get(position);
     }
 
     @Override
@@ -49,22 +53,53 @@ public class PhotoGridAdapter extends BaseAdapter {
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
+        File parentDirectory = mContext.getExternalFilesDir(Environment.DIRECTORY_DCIM);
 
-        ImageView imageView;
+        final LatLngNamePair pair = viewManager.getCurrent().get(position);
+
+        CheckableImageView imageView;
         if (convertView == null) {
             // if it's not recycled, initialize some attributes
-            imageView = new ImageView(mContext);
-            imageView.setLayoutParams(new ViewGroup.LayoutParams(85, 85));
+            imageView = new CheckableImageView(mContext);
+            int size = (int) mContext.getResources().getDimension(R.dimen.grid_image_size);
+            imageView.setLayoutParams(new GridView.LayoutParams(size, size));
             imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
             imageView.setPadding(8, 8, 8, 8);
         } else {
-            imageView = (ImageView) convertView;
+            imageView = (CheckableImageView) convertView;
         }
-        File photoFile = new File(parentDirectory, pairs.get(position).getImageUri());
+        imageView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                listener.onViewItemClicked(pair);
+            }
+        });
+        imageView.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                if (viewManager.getSelected().contains(pair))
+                    viewManager.removeFromSelected(pair);
+                else
+                    viewManager.addAsSelected(pair);
+                ((CheckableImageView) v).toggle();
+                Log.d("long", "longClicked! isSelected: " + ((CheckableImageView) v).isChecked());
+                return true;
+            }
+        });
+        File photoFile = new File(parentDirectory, viewManager.get(position).getName());
         loadBitmap(photoFile, imageView);
-        int size = (int) mContext.getResources().getDimension(R.dimen.grid_image_size);
-        imageView.setLayoutParams(new GridView.LayoutParams(size, size));
         return imageView;
+    }
+
+    public void removeSelected() {
+        for (LatLngNamePair pair : viewManager.getSelected())
+            remove(pair);
+        viewManager.clearSelected();
+        notifyDataSetChanged();
+    }
+
+    private void remove(LatLngNamePair pair) {
+        viewManager.remove(pair);
     }
 
     public void loadBitmap(File image, ImageView view) {
@@ -103,10 +138,7 @@ public class PhotoGridAdapter extends BaseAdapter {
         return inSampleSize;
     }
 
-    public List<LatLngURIPair> getPairs() {
-        return pairs;
-    }
-
+    @SuppressLint("StaticFieldLeak")
     class BitmapWorkerTask extends AsyncTask<File, Void, Bitmap> {
         private WeakReference<ImageView> imageViewWeakReference;
 
@@ -128,6 +160,51 @@ public class PhotoGridAdapter extends BaseAdapter {
                 if (imageView != null)
                     imageView.setImageBitmap(bitmap);
             }
+        }
+    }
+
+    class CheckableImageView extends android.support.v7.widget.AppCompatImageView
+            implements Checkable {
+
+        private boolean mChecked = false;
+        private final int[] CHECKED_STATE_SET = {android.R.attr.state_checked};
+
+        public CheckableImageView(Context ctx) {
+            super(ctx);
+        }
+
+        public CheckableImageView(Context ctx, AttributeSet attrs) {
+            super(ctx, attrs);
+        }
+
+        @Override
+        public int[] onCreateDrawableState(final int extraSpace) {
+            final int[] drawableState = super.onCreateDrawableState(extraSpace);
+            if (isChecked())
+                mergeDrawableStates(drawableState, CHECKED_STATE_SET);
+            return drawableState;
+        }
+
+        @Override
+        public void toggle() {
+            setChecked(!mChecked);
+        }
+
+        @Override
+        public void setChecked(boolean checked) {
+            if (mChecked != checked) {
+                mChecked = checked;
+                if (isChecked())
+                    this.setColorFilter(Color.argb(150,255,255,255));
+                else
+                    this.setColorFilter(Color.argb(0,255,255,255));
+                refreshDrawableState();
+            }
+        }
+
+        @Override
+        public boolean isChecked() {
+            return mChecked;
         }
     }
 }

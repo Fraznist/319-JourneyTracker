@@ -19,35 +19,35 @@ import android.widget.TextView;
 
 import com.example.eakgun14.journeytracker.Adapters.JournableAdapter;
 import com.example.eakgun14.journeytracker.Adapters.LightManagerAdapter;
-import com.example.eakgun14.journeytracker.DataTypes.Journable;
 import com.example.eakgun14.journeytracker.DataTypes.Journey;
-import com.example.eakgun14.journeytracker.Adapters.JournableAdapterListener;
+import com.example.eakgun14.journeytracker.Adapters.ViewAdapterListener;
 import com.example.eakgun14.journeytracker.Dialogs.NoticeDialogListener2;
 import com.example.eakgun14.journeytracker.Dialogs.ViewJourneyDialogFragment;
 import com.example.eakgun14.journeytracker.LocalDatabase.AppDatabase;
 import com.example.eakgun14.journeytracker.R;
-import com.example.eakgun14.journeytracker.RouteService.AudioManager;
 
-import java.util.Arrays;
 import java.util.List;
 
-public class JourniesActivity extends AppCompatActivity implements JournableAdapterListener,
+public class JourniesActivity extends AppCompatActivity implements ViewAdapterListener<Journey>,
         SensorEventListener, NoticeDialogListener2 {
 
     AppDatabase db;
 
     private LightManagerAdapter lightManager;
 
-    Journable[] journies;
-    int journalID;
+    List<Journey> journies;
     String journalName;
 
-    private JournableAdapter adapter;
+    private JournableAdapter<Journey> adapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_journies);
+
+        db = Room.databaseBuilder(getApplicationContext(), AppDatabase.class, "production")
+                .allowMainThreadQueries()
+                .build();
 
         ViewGroup thisLayout = findViewById(R.id.manage_journeys_constraint_layout);
         lightManager = new LightManagerAdapter(thisLayout, this);
@@ -57,41 +57,28 @@ public class JourniesActivity extends AppCompatActivity implements JournableAdap
         // Special case requires to display all journies, regardless of journal
         if (intent.getIntExtra("Special", 0) == -1) {
             journalName = "All Journeys";
-            journalID = 0;
+            journies = db.journeyDao().getAllJourneys();
         }
         else {
-            journalID = intent.getIntExtra("Journal", 0);
+            int journalID = intent.getIntExtra("Journal", 0);
             journalName = intent.getStringExtra("Name");
+            db.journeyDao().getAllJourneysInJournal(journalID);
         }
 
         android.support.v7.widget.Toolbar bar = findViewById(R.id.journey_toolbar);
         setSupportActionBar(bar);
         ActionBar actBar = getSupportActionBar();
+        assert actBar != null;
         actBar.setDisplayHomeAsUpEnabled(true);
-
-        db = Room.databaseBuilder(getApplicationContext(), AppDatabase.class, "production")
-                .allowMainThreadQueries()
-                .build();
-
-        // Special case, get all journeys to display
-        if (journalID == 0) {
-            Object[] temp = db.journeyDao().getAllJourneys().toArray();
-            journies = Arrays.copyOf(temp, temp.length, Journey[].class);
-        }
-        // get only the journies that are under the specified journal by the intent.
-        else {
-            Object[] temp = db.journeyDao().getAllJourneysInJournal(journalID).toArray();
-            journies = Arrays.copyOf(temp, temp.length, Journey[].class);
-        }
-
 
         RecyclerView recyclerView = findViewById(R.id.journies_recycler_view);
         recyclerView.setHasFixedSize(true);
 
-        RecyclerView.LayoutManager layoutMgr = new LinearLayoutManager(this);
-        adapter = new JournableAdapter(journies, this);
-        recyclerView.setLayoutManager(layoutMgr);
+        adapter = new JournableAdapter<>(journies, this);
         recyclerView.setAdapter(adapter);
+        RecyclerView.LayoutManager layoutMgr = new LinearLayoutManager(this);
+        recyclerView.setLayoutManager(layoutMgr);
+
 
         ImageButton deleteButton = findViewById(R.id.journey_delete_button);
         deleteButton.setOnClickListener(new View.OnClickListener() {
@@ -105,10 +92,8 @@ public class JourniesActivity extends AppCompatActivity implements JournableAdap
         viewButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Object[] temp = adapter.getSelectedJournables().toArray();
-                Journey[] selectedJournies = Arrays.copyOf(temp, temp.length, Journey[].class);
-
-                startViewJournesActivity(extractRouteArray(selectedJournies));
+                List<Journey> selected = adapter.getSelectedJournables();
+                startViewJournesActivity(extractRouteArray(selected));
             }
         });
 
@@ -147,9 +132,7 @@ public class JourniesActivity extends AppCompatActivity implements JournableAdap
     }
 
     @Override
-    public void onViewItemClicked(Object o) {
-        Journey j = (Journey) o;
-
+    public void onViewItemClicked(Journey j) {
         // Set up a dialog box to show a specific journeys details.
         FragmentManager fm = getSupportFragmentManager();
         DialogFragment frag =  new ViewJourneyDialogFragment();
@@ -168,12 +151,11 @@ public class JourniesActivity extends AppCompatActivity implements JournableAdap
     }
 
     public void updateJourniesDatabase() {
-        // Using arrays rather than collections because they are simpler to cast
-        Object[] temp = adapter.getJournablesToAdd().toArray();
-        db.journeyDao().insertAll(Arrays.copyOf(temp, temp.length, Journey[].class));
+        List<Journey> toAdd = adapter.getJournablesToAdd();
+        db.journeyDao().insertAll(toAdd);
 
-        temp = adapter.getJournablesToDelete().toArray();
-        db.journeyDao().deleteAll(Arrays.copyOf(temp, temp.length, Journey[].class));
+        List<Journey> toDelete = adapter.getJournablesToAdd();
+        db.journeyDao().insertAll(toDelete);
     }
 
     private void startViewJournesActivity(String ...routes) {
@@ -185,13 +167,13 @@ public class JourniesActivity extends AppCompatActivity implements JournableAdap
         startActivity(intent);
     }
 
-    private String[] extractRouteArray(Journey ...journies) {
+    private String[] extractRouteArray(List<Journey> journies) {
         // Only need the list of coordinates that represent a route,
         // Can't pass Journey object via intents anyways, they aren't parcelable
-        String[] routes = new String[journies.length];
+        String[] routes = new String[journies.size()];
 
         for (int i = 0; i < routes.length; i++)
-            routes[i] = journies[i].getRoute();
+            routes[i] = journies.get(i).getRoute();
 
         return routes;
     }

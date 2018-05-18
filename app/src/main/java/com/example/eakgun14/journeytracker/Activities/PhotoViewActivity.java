@@ -21,7 +21,8 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 
 import com.example.eakgun14.journeytracker.Adapters.PhotoGridAdapter;
-import com.example.eakgun14.journeytracker.DataTypes.LatLngURIPair;
+import com.example.eakgun14.journeytracker.Adapters.ViewAdapterListener;
+import com.example.eakgun14.journeytracker.DataTypes.LatLngNamePair;
 import com.example.eakgun14.journeytracker.R;
 import com.example.eakgun14.journeytracker.RouteService.AudioManager;
 import com.google.gson.Gson;
@@ -30,7 +31,8 @@ import com.google.gson.reflect.TypeToken;
 import java.io.File;
 import java.util.List;
 
-public class PhotoViewActivity extends AppCompatActivity {
+public class PhotoViewActivity extends AppCompatActivity
+        implements ViewAdapterListener<LatLngNamePair> {
 
     private File parentDirectory;
     private String photoOnEdit = null;
@@ -52,22 +54,13 @@ public class PhotoViewActivity extends AppCompatActivity {
         titus.setText(title);
 
         Gson gson = new Gson();
-        List<LatLngURIPair> pairs = gson.fromJson(uriJSONList,
-                new TypeToken<List<LatLngURIPair>>(){}.getType());
+        List<LatLngNamePair> pairs = gson.fromJson(uriJSONList,
+                new TypeToken<List<LatLngNamePair>>(){}.getType());
 
-        final PhotoGridAdapter adapter = new PhotoGridAdapter(this, pairs);
+        final PhotoGridAdapter adapter = new PhotoGridAdapter(this, this, pairs);
 
-        GridView gridView = findViewById(R.id.photo_journey);
+        final GridView gridView = findViewById(R.id.photo_journey);
         gridView.setAdapter(adapter);
-
-        gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                photoOnEdit = adapter.getPairs().get(position).getImageUri();
-                File photoFile = new File(parentDirectory, photoOnEdit);
-                startEditor(photoFile);
-            }
-        });
 
         ImageButton playButton = findViewById(R.id.photo_record_play_button);
         playButton.setOnClickListener(new View.OnClickListener() {
@@ -75,6 +68,15 @@ public class PhotoViewActivity extends AppCompatActivity {
             public void onClick(View v) {
                 checkAudioPermission();
                 audioManager.onPlay(title);
+            }
+        });
+
+        ImageButton deleteButton = findViewById(R.id.photo_delete_button);
+        deleteButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Log.d("checked", gridView.getCheckedItemPositions().toString());
+                adapter.removeSelected();
             }
         });
     }
@@ -157,5 +159,12 @@ public class PhotoViewActivity extends AppCompatActivity {
                 else finish();
             }
         }
+    }
+
+    @Override
+    public void onViewItemClicked(LatLngNamePair pair) {
+        photoOnEdit = pair.getName();
+        File photoFile = new File(parentDirectory, photoOnEdit);
+        startEditor(photoFile);
     }
 }

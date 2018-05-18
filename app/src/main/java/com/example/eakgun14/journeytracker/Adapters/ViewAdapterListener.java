@@ -1,5 +1,5 @@
 package com.example.eakgun14.journeytracker.Adapters;
 
-public interface JournableAdapterListener {
-    public void onViewItemClicked(Object o);
+public interface ViewAdapterListener<T> {
+    public void onViewItemClicked(T t);
 }

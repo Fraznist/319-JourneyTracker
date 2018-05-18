@@ -1,30 +1,26 @@
 package com.example.eakgun14.journeytracker.DataTypes;
 
-import android.net.Uri;
-
 import com.google.android.gms.maps.model.LatLng;
 
-import java.net.URI;
-
-public class LatLngURIPair {
+public class LatLngNamePair {
 
     private LatLng coords;
-    private String imageUri;
+    private String name;
 
-    public LatLngURIPair(LatLng latlng, String uri) {
+    public LatLngNamePair(LatLng latlng, String uri) {
         coords = latlng;
-        imageUri = uri;
+        name = uri;
     }
 
     public LatLng getCoords() {
         return coords;
     }
 
-    public String getImageUri() {
-        return imageUri;
+    public String getName() {
+        return name;
     }
 
     public String toString() {
-        return imageUri.toString();
+        return name.toString();
     }
 }

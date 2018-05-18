@@ -22,6 +22,9 @@ public interface JourneyDao {
     @Insert
     void insertAll(Journey... journeys);
 
+    @Insert
+    void insertAll(List<Journey> journeys);
+
     @Delete
     void deleteAll(Journey... journeys);
 }

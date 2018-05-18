@@ -18,6 +18,9 @@ public interface JournalDao {
     @Insert
     void insertAll(Journal... journals);
 
+    @Insert
+    void insertAll(List<Journal> journals);
+
     @Delete
     void deleteAll(Journal... journals);
 }

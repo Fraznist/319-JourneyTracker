@@ -6,6 +6,7 @@ import android.media.MediaRecorder;
 import android.os.Environment;
 import android.util.Log;
 
+import java.io.File;
 import java.io.IOException;
 
 public class AudioManager {
@@ -21,9 +22,9 @@ public class AudioManager {
         c = context;
     }
 
-    public void onRecord(String fileName) {
+    public void onRecord() {
         if (mStartRecording) {
-            startRecording(fileName);
+            startRecording();
         } else {
             stopRecording();
         }
@@ -39,11 +40,12 @@ public class AudioManager {
         mStartPlaying = !mStartPlaying;
     }
 
-    private void startRecording(String fileName) {
+    private void startRecording() {
         mRecorder = new MediaRecorder();
         mRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
         mRecorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
-        mRecorder.setOutputFile(c.getExternalFilesDir(Environment.DIRECTORY_MUSIC)+"/"+fileName);
+        mRecorder.setOutputFile(c.getExternalCacheDir()+"/tempAudio");
+        Log.d("audio", "" + c.getExternalCacheDir());
         mRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
 
         try {
@@ -75,5 +77,21 @@ public class AudioManager {
     private void stopPlaying() {
         mPlayer.release();
         mPlayer = null;
+    }
+
+    public void changeAudioFileName(String newJourneyName) {
+        String sourceName = "tempAudio";
+        File musicDir = c.getExternalFilesDir(Environment.DIRECTORY_MUSIC);
+        File cacheDir = c.getExternalCacheDir();
+
+        File sourceAudio = new File(cacheDir, sourceName);
+
+        if(!sourceAudio.exists())
+            return;
+
+        if (sourceAudio.renameTo(new File(musicDir, newJourneyName)))
+            Log.d("rename", "YE BOIII");
+        else
+            Log.d("rename", "no boi :(");
     }
 }

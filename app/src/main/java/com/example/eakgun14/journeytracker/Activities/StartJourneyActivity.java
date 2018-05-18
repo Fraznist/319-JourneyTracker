@@ -304,7 +304,7 @@ public class StartJourneyActivity extends FragmentActivity implements OnMapReady
             routeManager.clear();
             cameraManager.clear();
 
-            changeAudioFileName(name);
+            audioManager.changeAudioFileName(name);
 
             stopRouteService();
         }
@@ -321,22 +321,7 @@ public class StartJourneyActivity extends FragmentActivity implements OnMapReady
         if (audioManager == null)
             audioManager = new AudioManager(this.getApplicationContext());
 
-        audioManager.onRecord("tempAudio");
-    }
-
-    private void changeAudioFileName(String newJourneyName) {
-        String sourceName = "tempAudio";
-        File parentDirectory = this.getExternalFilesDir(Environment.DIRECTORY_MUSIC);
-
-        File sourceAudio = new File(parentDirectory, sourceName);
-
-        if(!sourceAudio.exists())
-            return;
-
-        if (sourceAudio.renameTo(new File(parentDirectory, newJourneyName)))
-            Log.d("rename", "YE BOIII");
-        else
-            Log.d("rename", "no boi :(");
+        audioManager.onRecord();
     }
 
     /** Callbacks for service binding, passed to bindService() */

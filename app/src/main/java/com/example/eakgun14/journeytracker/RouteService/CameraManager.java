@@ -5,16 +5,10 @@ import android.net.Uri;
 import android.os.Environment;
 import android.util.Log;
 
-import com.example.eakgun14.journeytracker.DataTypes.LatLngURIPair;
+import com.example.eakgun14.journeytracker.DataTypes.LatLngNamePair;
 import com.google.android.gms.maps.model.LatLng;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.net.URI;
-import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -23,8 +17,7 @@ public class CameraManager {
 
     private static final CameraManager instance = new CameraManager();
 
-    private List<LatLngURIPair> imageUriList = new ArrayList<>();
-//    private Uri extPhotoUri;
+    private List<LatLngNamePair> imageUriList = new ArrayList<>();
     private String photoName;
     private Context ctx;
 
@@ -46,10 +39,10 @@ public class CameraManager {
 
     public void cacheImage(LatLng coords) {
         Log.d("saveloc", photoName/*extPhotoUri.toString()*/);
-        imageUriList.add(new LatLngURIPair(coords, photoName/*extPhotoUri.toString()*/));
+        imageUriList.add(new LatLngNamePair(coords, photoName/*extPhotoUri.toString()*/));
     }
 
-    public List<LatLngURIPair> getImageUriList() {
+    public List<LatLngNamePair> getImageUriList() {
         return imageUriList;
     }
 

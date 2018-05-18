@@ -18,24 +18,25 @@ import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
-import java.util.Arrays;
+import java.util.List;
 
 import com.example.eakgun14.journeytracker.Adapters.JournableAdapter;
 import com.example.eakgun14.journeytracker.Adapters.LightManagerAdapter;
 import com.example.eakgun14.journeytracker.DataTypes.Journal;
-import com.example.eakgun14.journeytracker.Adapters.JournableAdapterListener;
+import com.example.eakgun14.journeytracker.Adapters.ViewAdapterListener;
 import com.example.eakgun14.journeytracker.Dialogs.CreateJournalDialogFragment;
 import com.example.eakgun14.journeytracker.Dialogs.NoticeDialogListener;
 import com.example.eakgun14.journeytracker.LocalDatabase.AppDatabase;
 import com.example.eakgun14.journeytracker.R;
 
-public class JournalsActivity extends AppCompatActivity implements JournableAdapterListener, NoticeDialogListener, SensorEventListener {
+public class JournalsActivity extends AppCompatActivity implements ViewAdapterListener<Journal>,
+        NoticeDialogListener, SensorEventListener {
 
     AppDatabase db;
 
     private LightManagerAdapter lightManager;
 
-    private JournableAdapter adapter;
+    private JournableAdapter<Journal> adapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,19 +49,19 @@ public class JournalsActivity extends AppCompatActivity implements JournableAdap
         android.support.v7.widget.Toolbar bar = findViewById(R.id.journal_toolbar);
         setSupportActionBar(bar);
         ActionBar actBar = getSupportActionBar();
+        assert actBar != null;
         actBar.setDisplayHomeAsUpEnabled(true);
 
         db = Room.databaseBuilder(getApplicationContext(), AppDatabase.class, "production")
                 .allowMainThreadQueries()//.fallbackToDestructiveMigration()
                 .build();
 
-        Object[] temp = db.journalDao().getAllJournals().toArray();
-        Journal[] journals = Arrays.copyOf(temp, temp.length, Journal[].class);
+        List<Journal> journals = db.journalDao().getAllJournals();
 
-        RecyclerView recyclerView = findViewById(R.id.recyclerView);
+        final RecyclerView recyclerView = findViewById(R.id.recyclerView);
         recyclerView.setHasFixedSize(true);
         RecyclerView.LayoutManager layoutMgr = new LinearLayoutManager(this);
-        adapter = new JournableAdapter(journals, this);
+        adapter = new JournableAdapter<>(journals, this);
         recyclerView.setLayoutManager(layoutMgr);
         recyclerView.setAdapter(adapter);
 
@@ -123,14 +124,11 @@ public class JournalsActivity extends AppCompatActivity implements JournableAdap
     }
 
     public void updateJournalDatabase() {
-        // Using arrays rather than collections because they are simpler to cast
-        Object[] temp = adapter.getJournablesToAdd().toArray();
-        db.journalDao().insertAll(Arrays.copyOf(temp, temp.length, Journal[].class));
+        List<Journal> toAdd = adapter.getJournablesToAdd();
+        db.journalDao().insertAll(toAdd);
 
-        temp = adapter.getJournablesToDelete().toArray();
-        Journal[] jays = Arrays.copyOf(temp, temp.length, Journal[].class);
-
-        db.journalDao().deleteAll(jays);
+        List<Journal> toDelete = adapter.getJournablesToDelete();
+        db.journalDao().insertAll(toDelete);
     }
 
     // Start JourniesActivity with a special intent, in order to display every single journey
@@ -141,10 +139,9 @@ public class JournalsActivity extends AppCompatActivity implements JournableAdap
     }
 
     @Override
-    public void onViewItemClicked(Object o) {
-        // JournableAdapterListener callback
+    public void onViewItemClicked(Journal j) {
+        // ViewAdapterListener callback
         // Start a JourniesActivity to display the contents of the selcted journal.
-        Journal j = (Journal)o;
         Integer journalID = j.getId();
         String journalName = j.getName();
         Intent intent = new Intent(JournalsActivity.this, JourniesActivity.class);
