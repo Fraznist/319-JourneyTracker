@@ -1,11 +1,13 @@
 package com.example.eakgun14.journeytracker.Dialogs;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v4.app.DialogFragment;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -21,11 +23,14 @@ public class CreateJournalDialogFragment extends DialogFragment {
     EditText nameText;
     Button saveJournal;
 
+    @NonNull
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
 
+        @SuppressWarnings("ConstantConditions")
         LayoutInflater inflater = getActivity().getLayoutInflater();
+        @SuppressLint("InflateParams")
         View view = inflater.inflate(R.layout.dialog_create_journal, null);
 
         final AlertDialog dialog = builder.setTitle(R.string.dialog_create_journal)

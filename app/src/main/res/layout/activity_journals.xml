@@ -7,48 +7,9 @@
     android:layout_height="match_parent"
     tools:context=".Activities.JournalsActivity">
 
-    <android.support.v7.widget.Toolbar
+    <include
         android:id="@+id/journal_toolbar"
-        android:layout_width="0dp"
-        android:layout_height="50dp"
-        android:background="@color/colorPrimary"
-        android:minHeight="?attr/actionBarSize"
-        android:theme="?attr/actionBarTheme"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
-
-        <android.support.constraint.ConstraintLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            tools:layout_editor_absoluteX="16dp">
-
-            <TextView
-                android:id="@+id/journal_title_view"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="8dp"
-                android:layout_marginTop="8dp"
-                android:text="@string/journal_page_title"
-                android:textSize="24sp"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
-
-            <ImageButton
-                android:id="@+id/journal_delete_button"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="16dp"
-                android:layout_marginRight="16dp"
-                android:background="@android:color/transparent"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                app:srcCompat="@android:drawable/ic_menu_delete" />
-        </android.support.constraint.ConstraintLayout>
-
-    </android.support.v7.widget.Toolbar>
+        layout="@layout/general_toolbar" />
 
     <TextView
         android:id="@+id/all_journals_text"
@@ -58,11 +19,14 @@
         android:layout_marginLeft="8dp"
         android:layout_marginRight="8dp"
         android:layout_marginStart="8dp"
+
+        android:layout_marginTop="8dp"
         android:gravity="center_vertical"
         android:paddingLeft="8dp"
         android:text="@string/all_journeys_name"
         android:textSize="16sp"
-        app:layout_constraintEnd_toEndOf="@+id/recyclerView"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/journal_toolbar" />
 
@@ -70,10 +34,9 @@
         android:id="@+id/recyclerView"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/all_journals_text"
         tools:listitem="@layout/row_layout">
 

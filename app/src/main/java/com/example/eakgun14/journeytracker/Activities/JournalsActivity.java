@@ -2,9 +2,6 @@ package com.example.eakgun14.journeytracker.Activities;
 
 import android.arch.persistence.room.Room;
 import android.content.Intent;
-import android.hardware.Sensor;
-import android.hardware.SensorEvent;
-import android.hardware.SensorEventListener;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.DialogFragment;
@@ -13,15 +10,16 @@ import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
-import android.widget.ImageButton;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.List;
 
 import com.example.eakgun14.journeytracker.Adapters.JournableAdapter;
-import com.example.eakgun14.journeytracker.Adapters.LightManagerAdapter;
 import com.example.eakgun14.journeytracker.DataTypes.Journal;
 import com.example.eakgun14.journeytracker.Adapters.ViewAdapterListener;
 import com.example.eakgun14.journeytracker.Dialogs.CreateJournalDialogFragment;
@@ -30,11 +28,9 @@ import com.example.eakgun14.journeytracker.LocalDatabase.AppDatabase;
 import com.example.eakgun14.journeytracker.R;
 
 public class JournalsActivity extends AppCompatActivity implements ViewAdapterListener<Journal>,
-        NoticeDialogListener, SensorEventListener {
+        NoticeDialogListener {
 
     AppDatabase db;
-
-    private LightManagerAdapter lightManager;
 
     private JournableAdapter<Journal> adapter;
 
@@ -43,14 +39,13 @@ public class JournalsActivity extends AppCompatActivity implements ViewAdapterLi
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_journals);
 
-        ViewGroup thisLayout = findViewById(R.id.manage_journal_constraint_layout);
-        lightManager = new LightManagerAdapter(thisLayout, this);
-
-        android.support.v7.widget.Toolbar bar = findViewById(R.id.journal_toolbar);
+        android.support.v7.widget.Toolbar bar = findViewById(R.id.toolbar);
         setSupportActionBar(bar);
         ActionBar actBar = getSupportActionBar();
         assert actBar != null;
         actBar.setDisplayHomeAsUpEnabled(true);
+        actBar.setHomeAsUpIndicator(R.drawable.ic_menu);
+        actBar.setTitle("All Journals");
 
         db = Room.databaseBuilder(getApplicationContext(), AppDatabase.class, "production")
                 .allowMainThreadQueries()//.fallbackToDestructiveMigration()
@@ -83,37 +78,43 @@ public class JournalsActivity extends AppCompatActivity implements ViewAdapterLi
                 startAllJourniesActivity();
             }
         });
+    }
 
-        ImageButton deleteButton = findViewById(R.id.journal_delete_button);
-        deleteButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
+    @Override
+    public void onBackPressed() {
+//        DrawerLayout drawer = findViewById(R.id.drawer_layout);
+//        if (drawer.isDrawerOpen(GravityCompat.START)) {
+//            drawer.closeDrawer(GravityCompat.START);
+//        } else {
+        super.onBackPressed();
+//        }
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.delete_menu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle action bar item clicks here. The action bar will
+        // automatically handle clicks on the Home/Up button, so long
+        // as you specify a parent activity in AndroidManifest.xml.
+        int id = item.getItemId();
+
+        //noinspection SimplifiableIfStatement
+        switch (id) {
+            case android.R.id.home:
+                onBackPressed();
+                return true;
+            case R.id.action_delete:
                 adapter.removeSelected();
-            }
-        });
-    }
+                return true;
+        }
 
-    @Override
-    protected void onPause() {
-        super.onPause();
-        lightManager.pause();
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        lightManager.resume();
-    }
-
-    @Override
-    public void onSensorChanged(SensorEvent event) {
-        if (event.sensor.getType() == Sensor.TYPE_LIGHT)
-            lightManager.illuminationChanged(event);
-    }
-
-    @Override
-    public void onAccuracyChanged(Sensor sensor, int accuracy) {
-
+        return super.onOptionsItemSelected(item);
     }
 
     @Override
@@ -125,10 +126,12 @@ public class JournalsActivity extends AppCompatActivity implements ViewAdapterLi
 
     public void updateJournalDatabase() {
         List<Journal> toAdd = adapter.getJournablesToAdd();
+        Log.d("db", "Add: " + toAdd);
         db.journalDao().insertAll(toAdd);
 
         List<Journal> toDelete = adapter.getJournablesToDelete();
-        db.journalDao().insertAll(toDelete);
+        Log.d("db", "Delete: " + toDelete.toString());
+        db.journalDao().deleteAll(toDelete);
     }
 
     // Start JourniesActivity with a special intent, in order to display every single journey

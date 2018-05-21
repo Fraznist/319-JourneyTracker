@@ -11,11 +11,15 @@ import android.os.Environment;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.view.GravityCompat;
+import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
-import android.widget.AdapterView;
 import android.widget.GridView;
 import android.widget.ImageButton;
 import android.widget.TextView;
@@ -37,48 +41,80 @@ public class PhotoViewActivity extends AppCompatActivity
     private File parentDirectory;
     private String photoOnEdit = null;
     private AudioManager audioManager;
+    private PhotoGridAdapter adapter;
+    private String title;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_photo_view);
 
-        audioManager = new AudioManager(this.getApplicationContext());
+        audioManager = AudioManager.getInstance();
+        audioManager.setContext(this.getApplicationContext());
         parentDirectory = this.getExternalFilesDir(Environment.DIRECTORY_DCIM);
 
         Intent intent = getIntent();
-        final String title = intent.getStringExtra("Journey Name");
+        title = intent.getStringExtra("Journey Name");
         String uriJSONList = intent.getStringExtra("URI JSON");
 
-        TextView titus = findViewById(R.id.photo_view_title);
-        titus.setText(title);
+        android.support.v7.widget.Toolbar bar = findViewById(R.id.toolbar);
+        setSupportActionBar(bar);
+        ActionBar actBar = getSupportActionBar();
+        assert actBar != null;
+        actBar.setDisplayHomeAsUpEnabled(true);
+        actBar.setHomeAsUpIndicator(R.drawable.ic_menu);
+        actBar.setTitle(title);
 
         Gson gson = new Gson();
         List<LatLngNamePair> pairs = gson.fromJson(uriJSONList,
                 new TypeToken<List<LatLngNamePair>>(){}.getType());
 
-        final PhotoGridAdapter adapter = new PhotoGridAdapter(this, this, pairs);
+        adapter = new PhotoGridAdapter(this, this, pairs);
 
         final GridView gridView = findViewById(R.id.photo_journey);
         gridView.setAdapter(adapter);
+    }
 
-        ImageButton playButton = findViewById(R.id.photo_record_play_button);
-        playButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
+    @Override
+    public void onBackPressed() {
+//        DrawerLayout drawer = findViewById(R.id.drawer_layout);
+//        if (drawer.isDrawerOpen(GravityCompat.START)) {
+//            drawer.closeDrawer(GravityCompat.START);
+//        } else {
+            super.onBackPressed();
+//        }
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.play_menu, menu);
+        getMenuInflater().inflate(R.menu.delete_menu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle action bar item clicks here. The action bar will
+        // automatically handle clicks on the Home/Up button, so long
+        // as you specify a parent activity in AndroidManifest.xml.
+        int id = item.getItemId();
+
+        //noinspection SimplifiableIfStatement
+        switch (id) {
+            case android.R.id.home:
+                onBackPressed();
+                return true;
+            case R.id.action_delete:
+                adapter.removeSelected();
+                return true;
+            case R.id.action_play:
                 checkAudioPermission();
                 audioManager.onPlay(title);
-            }
-        });
+                return true;
+        }
 
-        ImageButton deleteButton = findViewById(R.id.photo_delete_button);
-        deleteButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Log.d("checked", gridView.getCheckedItemPositions().toString());
-                adapter.removeSelected();
-            }
-        });
+        return super.onOptionsItemSelected(item);
     }
 
     private static final int EDIT_RESULT_CODE = 1010;

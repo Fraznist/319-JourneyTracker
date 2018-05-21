@@ -22,12 +22,14 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
 
-public class ViewJourniesActivity extends FragmentActivity implements OnMapReadyCallback, GoogleMap.OnMapLoadedCallback {
+public class ViewJourniesActivity extends FragmentActivity implements OnMapReadyCallback,
+        GoogleMap.OnMapLoadedCallback {
 
     private GoogleMap mMap;
     private List<List<LatLng>> routeList;
 
-    private static final int[] colors = {Color.BLUE, Color.YELLOW, Color.RED, Color.GREEN, Color.MAGENTA, Color.CYAN};
+    private static final int[] colors =
+            {Color.BLUE, Color.YELLOW, Color.RED, Color.GREEN, Color.MAGENTA, Color.CYAN};
     private int i = 0;
 
     @Override

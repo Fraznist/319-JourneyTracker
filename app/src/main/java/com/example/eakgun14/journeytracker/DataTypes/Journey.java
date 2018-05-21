@@ -6,7 +6,6 @@ import android.arch.persistence.room.ForeignKey;
 import android.arch.persistence.room.Index;
 import android.arch.persistence.room.PrimaryKey;
 
-import static android.arch.persistence.room.ForeignKey.SET_DEFAULT;
 import static android.arch.persistence.room.ForeignKey.SET_NULL;
 
 @Entity(foreignKeys = @ForeignKey(entity = Journal.class,

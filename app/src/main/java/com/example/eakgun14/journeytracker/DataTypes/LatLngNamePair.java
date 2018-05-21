@@ -21,6 +21,6 @@ public class LatLngNamePair {
     }
 
     public String toString() {
-        return name.toString();
+        return name + getCoords();
     }
 }

@@ -1,5 +1,6 @@
 package com.example.eakgun14.journeytracker.RouteService;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.media.MediaPlayer;
 import android.media.MediaRecorder;
@@ -11,6 +12,9 @@ import java.io.IOException;
 
 public class AudioManager {
 
+    @SuppressLint("StaticFieldLeak")
+    private static final AudioManager instance = new AudioManager();
+
     private Context c;
     private MediaRecorder mRecorder = null;
     private MediaPlayer mPlayer = null;
@@ -18,7 +22,11 @@ public class AudioManager {
     private boolean mStartRecording = true;
     private boolean mStartPlaying = true;
 
-    public AudioManager(Context context) {
+    public static AudioManager getInstance() {
+        return instance;
+    }
+
+    public void setContext(Context context) {
         c = context;
     }
 

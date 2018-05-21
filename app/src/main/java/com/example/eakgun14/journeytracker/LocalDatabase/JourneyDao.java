@@ -5,7 +5,6 @@ import android.arch.persistence.room.Delete;
 import android.arch.persistence.room.Insert;
 import android.arch.persistence.room.Query;
 
-import com.example.eakgun14.journeytracker.DataTypes.Journable;
 import com.example.eakgun14.journeytracker.DataTypes.Journey;
 
 import java.util.List;
@@ -26,5 +25,5 @@ public interface JourneyDao {
     void insertAll(List<Journey> journeys);
 
     @Delete
-    void deleteAll(Journey... journeys);
+    void deleteAll(List<Journey> journeys);
 }

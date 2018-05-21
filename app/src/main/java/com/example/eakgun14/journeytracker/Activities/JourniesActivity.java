@@ -2,9 +2,6 @@ package com.example.eakgun14.journeytracker.Activities;
 
 import android.arch.persistence.room.Room;
 import android.content.Intent;
-import android.hardware.Sensor;
-import android.hardware.SensorEvent;
-import android.hardware.SensorEventListener;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.ActionBar;
@@ -12,13 +9,15 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.eakgun14.journeytracker.Adapters.JournableAdapter;
-import com.example.eakgun14.journeytracker.Adapters.LightManagerAdapter;
 import com.example.eakgun14.journeytracker.DataTypes.Journey;
 import com.example.eakgun14.journeytracker.Adapters.ViewAdapterListener;
 import com.example.eakgun14.journeytracker.Dialogs.NoticeDialogListener2;
@@ -29,11 +28,9 @@ import com.example.eakgun14.journeytracker.R;
 import java.util.List;
 
 public class JourniesActivity extends AppCompatActivity implements ViewAdapterListener<Journey>,
-        SensorEventListener, NoticeDialogListener2 {
+        NoticeDialogListener2 {
 
     AppDatabase db;
-
-    private LightManagerAdapter lightManager;
 
     List<Journey> journies;
     String journalName;
@@ -49,9 +46,6 @@ public class JourniesActivity extends AppCompatActivity implements ViewAdapterLi
                 .allowMainThreadQueries()
                 .build();
 
-        ViewGroup thisLayout = findViewById(R.id.manage_journeys_constraint_layout);
-        lightManager = new LightManagerAdapter(thisLayout, this);
-
         Intent intent = getIntent();
 
         // Special case requires to display all journies, regardless of journal
@@ -62,14 +56,16 @@ public class JourniesActivity extends AppCompatActivity implements ViewAdapterLi
         else {
             int journalID = intent.getIntExtra("Journal", 0);
             journalName = intent.getStringExtra("Name");
-            db.journeyDao().getAllJourneysInJournal(journalID);
+            journies = db.journeyDao().getAllJourneysInJournal(journalID);
         }
 
-        android.support.v7.widget.Toolbar bar = findViewById(R.id.journey_toolbar);
+        android.support.v7.widget.Toolbar bar = findViewById(R.id.toolbar);
         setSupportActionBar(bar);
         ActionBar actBar = getSupportActionBar();
         assert actBar != null;
         actBar.setDisplayHomeAsUpEnabled(true);
+        actBar.setHomeAsUpIndicator(R.drawable.ic_menu);
+        actBar.setTitle(journalName);
 
         RecyclerView recyclerView = findViewById(R.id.journies_recycler_view);
         recyclerView.setHasFixedSize(true);
@@ -79,15 +75,6 @@ public class JourniesActivity extends AppCompatActivity implements ViewAdapterLi
         RecyclerView.LayoutManager layoutMgr = new LinearLayoutManager(this);
         recyclerView.setLayoutManager(layoutMgr);
 
-
-        ImageButton deleteButton = findViewById(R.id.journey_delete_button);
-        deleteButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                adapter.removeSelected();
-            }
-        });
-
         ImageButton viewButton = findViewById(R.id.journey_view_button);
         viewButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -96,32 +83,46 @@ public class JourniesActivity extends AppCompatActivity implements ViewAdapterLi
                 startViewJournesActivity(extractRouteArray(selected));
             }
         });
-
-        TextView title = findViewById(R.id.journey_title);
-        title.setText(journalName);
     }
 
     @Override
-    protected void onPause() {
-        super.onPause();
-        lightManager.pause();
+    public void onBackPressed() {
+//        DrawerLayout drawer = findViewById(R.id.drawer_layout);
+//        if (drawer.isDrawerOpen(GravityCompat.START)) {
+//            drawer.closeDrawer(GravityCompat.START);
+//        } else {
+            super.onBackPressed();
+//        }
     }
 
     @Override
-    protected void onResume() {
-        super.onResume();
-        lightManager.resume();
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.move_menu, menu);
+        getMenuInflater().inflate(R.menu.delete_menu, menu);
+        return true;
     }
 
     @Override
-    public void onSensorChanged(SensorEvent event) {
-        if (event.sensor.getType() == Sensor.TYPE_LIGHT)
-            lightManager.illuminationChanged(event);
-    }
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle action bar item clicks here. The action bar will
+        // automatically handle clicks on the Home/Up button, so long
+        // as you specify a parent activity in AndroidManifest.xml.
+        int id = item.getItemId();
 
-    @Override
-    public void onAccuracyChanged(Sensor sensor, int accuracy) {
+        //noinspection SimplifiableIfStatement
+        switch (id) {
+            case android.R.id.home:
+                return true;
+            case R.id.action_delete:
+                adapter.removeSelected();
+                return true;
+            case R.id.action_move:
+                Toast.makeText(this, "MOVE", Toast.LENGTH_SHORT).show();
+                return true;
+        }
 
+        return super.onOptionsItemSelected(item);
     }
 
     @Override
@@ -152,10 +153,12 @@ public class JourniesActivity extends AppCompatActivity implements ViewAdapterLi
 
     public void updateJourniesDatabase() {
         List<Journey> toAdd = adapter.getJournablesToAdd();
+        Log.d("db", toAdd.toString());
         db.journeyDao().insertAll(toAdd);
 
-        List<Journey> toDelete = adapter.getJournablesToAdd();
-        db.journeyDao().insertAll(toDelete);
+        List<Journey> toDelete = adapter.getJournablesToDelete();
+        Log.d("db", toDelete.toString());
+        db.journeyDao().deleteAll(toDelete);
     }
 
     private void startViewJournesActivity(String ...routes) {

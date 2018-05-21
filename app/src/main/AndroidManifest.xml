@@ -26,7 +26,7 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/AppTheme">
+        android:theme="@style/AppTheme.NoActionBar">
         <activity
             android:name=".Activities.MainActivity"
             android:label="@string/app_name"
@@ -63,16 +63,14 @@
         <activity
             android:name=".Activities.JournalsActivity"
             android:label="@string/title_activity_journals"
-            android:parentActivityName=".Activities.MainActivity"
-            android:theme="@style/AppTheme.NoActionBar">
+            android:parentActivityName=".Activities.MainActivity">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.example.eakgun14.journeytracker.Activities.MainActivity" />
         </activity>
         <activity
             android:name=".Activities.JourniesActivity"
-            android:parentActivityName=".Activities.JournalsActivity"
-            android:theme="@style/AppTheme.NoActionBar">
+            android:parentActivityName=".Activities.JournalsActivity">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.example.eakgun14.journeytracker.Activities.JournalsActivity" />
@@ -86,8 +84,7 @@
             android:label="@string/title_activity_view_journies" />
         <activity
             android:name=".Activities.PhotoViewActivity"
-            android:parentActivityName=".Activities.JourniesActivity"
-            android:theme="@style/AppTheme.NoActionBar">
+            android:parentActivityName=".Activities.JourniesActivity">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.example.eakgun14.journeytracker.Activities.JourniesActivity" />

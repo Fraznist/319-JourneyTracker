@@ -1,5 +1,6 @@
 package com.example.eakgun14.journeytracker.RouteService;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.net.Uri;
 import android.os.Environment;
@@ -15,6 +16,7 @@ import java.util.List;
 
 public class CameraManager {
 
+    @SuppressLint("StaticFieldLeak")
     private static final CameraManager instance = new CameraManager();
 
     private List<LatLngNamePair> imageUriList = new ArrayList<>();
@@ -33,8 +35,7 @@ public class CameraManager {
         String timeStamp = new Date().toString();
         photoName = "IMG_" + timeStamp + ".jpg";
         File extPhoto = new File(ctx.getExternalFilesDir(Environment.DIRECTORY_DCIM),  photoName);
-        Uri extPhotoUri = Uri.fromFile(extPhoto);
-        return extPhotoUri;
+        return Uri.fromFile(extPhoto);
     }
 
     public void cacheImage(LatLng coords) {

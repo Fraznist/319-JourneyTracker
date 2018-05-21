@@ -56,7 +56,7 @@ public class RouteService extends Service implements WeatherListener {
         LocationRequest mLocationRequest = new LocationRequest();
         mLocationRequest.setInterval(10000)
                 .setFastestInterval(5000)
-                .setSmallestDisplacement(20)
+                .setSmallestDisplacement(5)
                 .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
         mFusedLocationProviderClient.requestLocationUpdates(mLocationRequest, mLocationCallback, Looper.myLooper());
 

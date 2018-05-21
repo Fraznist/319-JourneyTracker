@@ -8,6 +8,8 @@
     android:gravity="center_horizontal"
     tools:context=".Activities.MainActivity">
 
+    <include layout="@layout/general_toolbar" />
+
     <Button
         android:id="@+id/manage_journey"
         android:layout_width="wrap_content"

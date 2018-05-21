@@ -1,11 +1,13 @@
 package com.example.eakgun14.journeytracker.Dialogs;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v4.app.DialogFragment;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -23,20 +25,26 @@ public class ViewJourneyDialogFragment extends DialogFragment {
     private String route;
     private String photos;
 
+    @NonNull
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
 
-        name = getArguments().getString("name");
-        String desc = getArguments().getString("description");
-        route = getArguments().getString("route");
-        photos = getArguments().getString("photos");
+        String desc = "";
+        if (getArguments() != null) {
+            name = getArguments().getString("name");
+            desc = getArguments().getString("description");
+            route = getArguments().getString("route");
+            photos = getArguments().getString("photos");
+        }
 
+        @SuppressWarnings("ConstantConditions")
         LayoutInflater inflater = getActivity().getLayoutInflater();
+        @SuppressLint("InflateParams")
         View view = inflater.inflate(R.layout.dialog_view_journey_info, null);
 
         EditText description = view.findViewById(R.id.dialog_view_journey_description);
-        description.setText(desc.toString());
+        description.setText(desc);
         description.setFocusable(false);
 
         Button viewButton = view.findViewById(R.id.dialog_view_journey_view);

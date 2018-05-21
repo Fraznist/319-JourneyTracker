@@ -98,6 +98,8 @@ public class StartJourneyActivity extends FragmentActivity implements OnMapReady
         routeManager = RouteManager.getInstance();
         cameraManager = CameraManager.getInstance();
         cameraManager.setContext(this.getApplicationContext());
+        audioManager = AudioManager.getInstance();
+        audioManager.setContext(this.getApplicationContext());
 
         mFusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
 
@@ -304,7 +306,8 @@ public class StartJourneyActivity extends FragmentActivity implements OnMapReady
             routeManager.clear();
             cameraManager.clear();
 
-            audioManager.changeAudioFileName(name);
+            if (audioManager != null)
+                audioManager.changeAudioFileName(name);
 
             stopRouteService();
         }
@@ -319,7 +322,7 @@ public class StartJourneyActivity extends FragmentActivity implements OnMapReady
         checkAudioPermission();
 
         if (audioManager == null)
-            audioManager = new AudioManager(this.getApplicationContext());
+            audioManager = AudioManager.getInstance();
 
         audioManager.onRecord();
     }

@@ -56,6 +56,7 @@ public class PhotoGridAdapter extends BaseAdapter {
         File parentDirectory = mContext.getExternalFilesDir(Environment.DIRECTORY_DCIM);
 
         final LatLngNamePair pair = viewManager.getCurrent().get(position);
+        Log.d("pic", viewManager.getCurrent().toString());
 
         CheckableImageView imageView;
         if (convertView == null) {
@@ -102,7 +103,7 @@ public class PhotoGridAdapter extends BaseAdapter {
         viewManager.remove(pair);
     }
 
-    public void loadBitmap(File image, ImageView view) {
+    private void loadBitmap(File image, ImageView view) {
         BitmapWorkerTask task = new BitmapWorkerTask(view);
         task.execute(image);
     }
@@ -142,7 +143,7 @@ public class PhotoGridAdapter extends BaseAdapter {
     class BitmapWorkerTask extends AsyncTask<File, Void, Bitmap> {
         private WeakReference<ImageView> imageViewWeakReference;
 
-        public BitmapWorkerTask(ImageView view) {
+        BitmapWorkerTask(ImageView view) {
             imageViewWeakReference = new WeakReference<>(view);
         }
 

@@ -21,9 +21,9 @@ public class JournableAdapter<T extends Journable>
         extends RecyclerView.Adapter<JournableAdapter.ViewHolder> {
 
     private DynamicViewManager<T> viewManager;
-    private ViewAdapterListener jact;  // reference to the calling activity
+    private ViewAdapterListener<T> jact;  // reference to the calling activity
 
-    public JournableAdapter(List<T> jjs, ViewAdapterListener ja) {
+    public JournableAdapter(List<T> jjs, ViewAdapterListener<T> ja) {
         viewManager = new DynamicViewManager<>(jjs);
         jact = ja;
     }
