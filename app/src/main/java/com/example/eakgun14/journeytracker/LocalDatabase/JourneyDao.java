@@ -18,6 +18,9 @@ public interface JourneyDao {
     @Query("SELECT * FROM journey WHERE journal_id IS :j_id")
     List<Journey> getAllJourneysInJournal(int j_id);
 
+    @Query("UPDATE journey SET journal_id = :j_id WHERE id IN(:ids)")
+    void moveJourneys(List<Integer> ids, int j_id);
+
     @Insert
     void insertAll(Journey... journeys);
 

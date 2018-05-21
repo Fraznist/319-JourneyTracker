@@ -14,18 +14,21 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageButton;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.eakgun14.journeytracker.Adapters.JournableAdapter;
+import com.example.eakgun14.journeytracker.DataTypes.Journal;
 import com.example.eakgun14.journeytracker.DataTypes.Journey;
 import com.example.eakgun14.journeytracker.Adapters.ViewAdapterListener;
+import com.example.eakgun14.journeytracker.Dialogs.MoveJourneysDialogFragment;
 import com.example.eakgun14.journeytracker.Dialogs.NoticeDialogListener2;
 import com.example.eakgun14.journeytracker.Dialogs.ViewJourneyDialogFragment;
 import com.example.eakgun14.journeytracker.LocalDatabase.AppDatabase;
 import com.example.eakgun14.journeytracker.R;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class JourniesActivity extends AppCompatActivity implements ViewAdapterListener<Journey>,
         NoticeDialogListener2 {
@@ -118,7 +121,7 @@ public class JourniesActivity extends AppCompatActivity implements ViewAdapterLi
                 adapter.removeSelected();
                 return true;
             case R.id.action_move:
-                Toast.makeText(this, "MOVE", Toast.LENGTH_SHORT).show();
+                showMoveJourneysDialog();
                 return true;
         }
 
@@ -151,14 +154,41 @@ public class JourniesActivity extends AppCompatActivity implements ViewAdapterLi
         frag.show(fm, "fragment_view_journey_info");
     }
 
+    public void showMoveJourneysDialog() {
+        FragmentManager fm = getSupportFragmentManager();
+        DialogFragment frag =  new MoveJourneysDialogFragment();
+
+        Bundle args = new Bundle();
+        List<Journal> journals = db.journalDao().getAllJournals();
+        ArrayList<String> names = new ArrayList<>();
+        ArrayList<Integer> ids = new ArrayList<>();
+
+        for (Journal j : journals) {
+            names.add(j.getName());
+            ids.add(j.getId());
+        }
+
+        args.putStringArrayList("journal names", names);
+        args.putIntegerArrayList("journal ids", ids);
+
+        // Show a dialog box to specify details of the route
+        frag.setArguments(args);
+        frag.show(fm, "fragment_move_journeys");
+    }
+
     public void updateJourniesDatabase() {
         List<Journey> toAdd = adapter.getJournablesToAdd();
-        Log.d("db", toAdd.toString());
         db.journeyDao().insertAll(toAdd);
 
         List<Journey> toDelete = adapter.getJournablesToDelete();
-        Log.d("db", toDelete.toString());
         db.journeyDao().deleteAll(toDelete);
+
+        Map<Integer, List<Integer>> toMove = adapter.getJournablesToMove();
+        Log.d("move", toMove.toString());
+        for (Integer key : toMove.keySet())
+            db.journeyDao().moveJourneys(toMove.get(key), key);
+
+        adapter.clearModifications();
     }
 
     private void startViewJournesActivity(String ...routes) {
@@ -182,10 +212,27 @@ public class JourniesActivity extends AppCompatActivity implements ViewAdapterLi
     }
 
     @Override
-    public void onDialogClick(DialogFragment dialog) {
+    public void onDialogClick(DialogFragment dialog, View trigger) {
         // NoticeDialogListener callback,
         // display the route that is stored in the dialogFragment
-        startViewJournesActivity( ((ViewJourneyDialogFragment) dialog).getRoute() );
+        switch (trigger.getId()) {
+            case R.id.dialog_view_journey_view:
+                startViewJournesActivity( ((ViewJourneyDialogFragment) dialog).getRoute());
+                break;
+            case R.id.dialog_view_journey_photos:
+                ViewJourneyDialogFragment dial = (ViewJourneyDialogFragment) dialog;
+                Intent intent = new Intent(JourniesActivity.this, PhotoViewActivity.class);
+                intent.putExtra("Journey Name", dial.getName());
+                intent.putExtra("URI JSON", dial.getPhotos());
+                startActivity(intent);
+                break;
+            case R.id.dialog_move_journey_button:
+                MoveJourneysDialogFragment dialla = (MoveJourneysDialogFragment) dialog;
+                Integer j_id = dialla.getSelectedJournalID();
+                adapter.moveSelected(j_id);
+                break;
+        }
+
     }
 
     @Override

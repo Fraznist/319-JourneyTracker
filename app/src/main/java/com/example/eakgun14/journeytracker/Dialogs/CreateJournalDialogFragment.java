@@ -43,7 +43,7 @@ public class CreateJournalDialogFragment extends DialogFragment {
         saveJournal.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mListener.onDialogClick(CreateJournalDialogFragment.this);
+                mListener.onDialogClick(CreateJournalDialogFragment.this, v);
                 dialog.dismiss();
             }
         });

@@ -14,7 +14,11 @@ import android.view.View.OnClickListener;
 import com.example.eakgun14.journeytracker.DataTypes.Journable;
 import com.example.eakgun14.journeytracker.R;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 // Custom class that can show both Journeys and Journals, trating them as Journable objects
 public class JournableAdapter<T extends Journable>
@@ -42,6 +46,27 @@ public class JournableAdapter<T extends Journable>
     private void remove(T j) {
         int i = viewManager.remove(j);
         notifyItemRemoved(i);
+    }
+
+    public void moveSelected(int targetID) {
+        List<Integer> moveList = new LinkedList<>();
+
+        for (T t : getSelectedJournables())
+            moveList.add(t.getId());
+
+        for (T t : getSelectedJournables()) {
+            int i = viewManager.getCurrent().indexOf(t);  // index required to notify RecyclerView
+            viewManager.getCurrent().remove(i);
+            notifyItemRemoved(i);
+        }
+
+        Map<Integer, List<Integer>> moveMap = viewManager.getMoveMap();
+        if (moveMap.containsKey(targetID))
+            moveMap.get(targetID).addAll(moveList);
+        else
+            moveMap.put(targetID, moveList);
+
+        viewManager.clearSelected();
     }
 
     // Create new views (invoked by the layout manager)
@@ -91,6 +116,10 @@ public class JournableAdapter<T extends Journable>
         return viewManager.getCurrent().size();
     }
 
+    public void clearModifications() {
+        viewManager.clearModifications();
+    }
+
     public List<T> getJournablesToAdd() {
         return viewManager.getToAdd();
     }
@@ -101,6 +130,10 @@ public class JournableAdapter<T extends Journable>
 
     public List<T> getSelectedJournables() {
         return viewManager.getSelected();
+    }
+
+    public Map<Integer, List<Integer>> getJournablesToMove() {
+        return viewManager.getMoveMap();
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {

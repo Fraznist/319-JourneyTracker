@@ -15,7 +15,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import java.util.List;
 
@@ -132,6 +131,8 @@ public class JournalsActivity extends AppCompatActivity implements ViewAdapterLi
         List<Journal> toDelete = adapter.getJournablesToDelete();
         Log.d("db", "Delete: " + toDelete.toString());
         db.journalDao().deleteAll(toDelete);
+
+        adapter.clearModifications();
     }
 
     // Start JourniesActivity with a special intent, in order to display every single journey
@@ -154,7 +155,7 @@ public class JournalsActivity extends AppCompatActivity implements ViewAdapterLi
     }
 
     @Override
-    public void onDialogClick(DialogFragment dialog) {
+    public void onDialogClick(DialogFragment dialog, View trigger) {
         // NoticeDialogListener callback
         // Create a new journal with the specified details
         // For now it exists only in the JournableAdapter instance,

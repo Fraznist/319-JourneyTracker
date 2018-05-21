@@ -1,7 +1,9 @@
 package com.example.eakgun14.journeytracker.Adapters;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class DynamicViewManager<T> {
 
@@ -9,6 +11,7 @@ public class DynamicViewManager<T> {
     private List<T> selected; // Objects that are selected
     private List<T> toAdd;    // Objects scheduled to be stored on db
     private List<T> toDelete; // Objects scheduled to be removed from db
+    private Map<Integer, List<Integer>> moveMap; // {journal_id of destination, ids of journeys to move}
 
     DynamicViewManager(List<T> ogList) {
         if (ogList == null)
@@ -17,6 +20,7 @@ public class DynamicViewManager<T> {
         selected = new ArrayList<>();
         toAdd = new ArrayList<>();
         toDelete = new ArrayList<>();
+        moveMap = new HashMap<>();
     }
 
     public void add(int position, T item) {
@@ -53,6 +57,13 @@ public class DynamicViewManager<T> {
         selected.clear();
     }
 
+    public void clearModifications() {
+        selected.clear();
+        toAdd.clear();
+        toDelete.clear();
+        moveMap.clear();
+    }
+
     public int size() {
         return current.size();
     }
@@ -75,5 +86,9 @@ public class DynamicViewManager<T> {
 
     public List<T> getToDelete() {
         return toDelete;
+    }
+
+    public Map<Integer, List<Integer>> getMoveMap() {
+        return moveMap;
     }
 }

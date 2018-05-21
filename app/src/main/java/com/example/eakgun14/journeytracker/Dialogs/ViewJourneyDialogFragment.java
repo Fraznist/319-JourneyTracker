@@ -51,7 +51,7 @@ public class ViewJourneyDialogFragment extends DialogFragment {
         viewButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mListener.onDialogClick(ViewJourneyDialogFragment.this);
+                mListener.onDialogClick(ViewJourneyDialogFragment.this, v);
             }
         });
 
@@ -59,7 +59,7 @@ public class ViewJourneyDialogFragment extends DialogFragment {
         photoButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mListener.onSecondaryDialogClick(ViewJourneyDialogFragment.this);
+                mListener.onDialogClick(ViewJourneyDialogFragment.this, v);
             }
         });
 

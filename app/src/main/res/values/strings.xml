@@ -33,5 +33,7 @@
     <string name="dialog_show_journey_on_map">View On Map</string>
     <string name="dialog_show_journey_pictures">View Pictures</string>
     <string name="dialog_create_journal">New Journal</string>
+    <string name="dialog_move_journal">Move Selected Journeys To:</string>
+    <string name="dialog_move_journal_button">Move</string>
     <string name="title_activity_view_journies">Map</string>
 </resources>

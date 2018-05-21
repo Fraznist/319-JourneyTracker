@@ -41,7 +41,7 @@ public class NewJourneyDialogFragment extends DialogFragment {
         View view = inflater.inflate(R.layout.dialog_save_journey, null);
         nameText = view.findViewById(R.id.dialog_create_journal_name);
         descText = view.findViewById(R.id.dialog_journey_save_description);
-        journalSpinner = view.findViewById(R.id.dialog_save_journey_spinner);
+        journalSpinner = view.findViewById(R.id.dialog_move_journey_spinner);
 
         Button record = view.findViewById(R.id.dialog_save_journey_record);
         record.setOnClickListener(new View.OnClickListener() {
@@ -55,7 +55,7 @@ public class NewJourneyDialogFragment extends DialogFragment {
         save.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mListener.onDialogClick(NewJourneyDialogFragment.this);
+                mListener.onDialogClick(NewJourneyDialogFragment.this, v);
                 getDialog().dismiss();
             }
         });

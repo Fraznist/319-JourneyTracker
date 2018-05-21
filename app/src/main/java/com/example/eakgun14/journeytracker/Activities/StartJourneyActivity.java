@@ -281,7 +281,7 @@ public class StartJourneyActivity extends FragmentActivity implements OnMapReady
 
     // NoticeDialogListener Callback
     @Override
-    public void onDialogClick(DialogFragment dialog) {
+    public void onDialogClick(DialogFragment dialog, View trigger) {
 
         // Store the recorded route into the database, with the name, description, and folder
         // Specified in the dialog box.
