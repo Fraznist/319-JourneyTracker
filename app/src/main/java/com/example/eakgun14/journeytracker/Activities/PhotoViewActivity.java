@@ -11,18 +11,13 @@ import android.os.Environment;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
-import android.support.v4.view.GravityCompat;
-import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
 import android.widget.GridView;
-import android.widget.ImageButton;
-import android.widget.TextView;
 
 import com.example.eakgun14.journeytracker.Adapters.PhotoGridAdapter;
 import com.example.eakgun14.journeytracker.Adapters.ViewAdapterListener;
@@ -161,7 +156,8 @@ public class PhotoViewActivity extends AppCompatActivity
 
                 // Show an explanation to the user *asynchronously* -- don't block
                 // this thread waiting for the user's response! After the user
-                // sees the explanation, try again to request the permission.
+                // sees the explanation, try a
+                // gain to request the permission.
                 new AlertDialog.Builder(this)
                         .setTitle("Location Permission Needed")
                         .setMessage("This app needs the record audio permission, please accept to use location functionality")

@@ -14,7 +14,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageButton;
-import android.widget.Toast;
 
 import com.example.eakgun14.journeytracker.Adapters.JournableAdapter;
 import com.example.eakgun14.journeytracker.DataTypes.Journal;
@@ -83,7 +82,7 @@ public class JourniesActivity extends AppCompatActivity implements ViewAdapterLi
             @Override
             public void onClick(View v) {
                 List<Journey> selected = adapter.getSelectedJournables();
-                startViewJournesActivity(extractRouteArray(selected));
+                startViewJourneysActivity(extractRouteArray(selected), extractPairArray(selected));
             }
         });
     }
@@ -184,29 +183,38 @@ public class JourniesActivity extends AppCompatActivity implements ViewAdapterLi
         db.journeyDao().deleteAll(toDelete);
 
         Map<Integer, List<Integer>> toMove = adapter.getJournablesToMove();
-        Log.d("move", toMove.toString());
         for (Integer key : toMove.keySet())
             db.journeyDao().moveJourneys(toMove.get(key), key);
 
         adapter.clearModifications();
     }
 
-    private void startViewJournesActivity(String ...routes) {
+    private void startViewJourneysActivity(String[] routes, String[] pairs) {
         // routes is an array of JSON objects
         // each JSON object represents a list of coordiantes when deserialized
         Intent intent = new Intent(JourniesActivity.this, ViewJourniesActivity.class);
         intent.putExtra("routes", routes);
+        intent.putExtra("pairs", pairs);
 
         startActivity(intent);
     }
 
-    private String[] extractRouteArray(List<Journey> journies) {
+    private String[] extractRouteArray(List<Journey> journeys) {
         // Only need the list of coordinates that represent a route,
         // Can't pass Journey object via intents anyways, they aren't parcelable
-        String[] routes = new String[journies.size()];
+        String[] routes = new String[journeys.size()];
 
         for (int i = 0; i < routes.length; i++)
-            routes[i] = journies.get(i).getRoute();
+            routes[i] = journeys.get(i).getRoute();
+
+        return routes;
+    }
+
+    private String[] extractPairArray(List<Journey> journeys) {
+        String[] routes = new String[journeys.size()];
+
+        for (int i = 0; i < routes.length; i++)
+            routes[i] = journeys.get(i).getCoordinate_photos();
 
         return routes;
     }
@@ -217,7 +225,10 @@ public class JourniesActivity extends AppCompatActivity implements ViewAdapterLi
         // display the route that is stored in the dialogFragment
         switch (trigger.getId()) {
             case R.id.dialog_view_journey_view:
-                startViewJournesActivity( ((ViewJourneyDialogFragment) dialog).getRoute());
+                String[] route = new String[1]; String[] pair = new String[1];
+                route[0] = ((ViewJourneyDialogFragment) dialog).getRoute();
+                pair[0] = ((ViewJourneyDialogFragment) dialog).getPhotos();
+                startViewJourneysActivity(route, pair);
                 break;
             case R.id.dialog_view_journey_photos:
                 ViewJourneyDialogFragment dial = (ViewJourneyDialogFragment) dialog;

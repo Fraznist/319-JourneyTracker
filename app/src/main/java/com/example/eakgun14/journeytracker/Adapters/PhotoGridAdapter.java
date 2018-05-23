@@ -1,11 +1,7 @@
 package com.example.eakgun14.journeytracker.Adapters;
 
-import android.annotation.SuppressLint;
 import android.content.Context;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Color;
-import android.os.AsyncTask;
 import android.os.Environment;
 import android.util.AttributeSet;
 import android.util.Log;
@@ -20,7 +16,6 @@ import com.example.eakgun14.journeytracker.DataTypes.LatLngNamePair;
 import com.example.eakgun14.journeytracker.R;
 
 import java.io.File;
-import java.lang.ref.WeakReference;
 import java.util.List;
 
 public class PhotoGridAdapter extends BaseAdapter {
@@ -56,7 +51,6 @@ public class PhotoGridAdapter extends BaseAdapter {
         File parentDirectory = mContext.getExternalFilesDir(Environment.DIRECTORY_DCIM);
 
         final LatLngNamePair pair = viewManager.getCurrent().get(position);
-        Log.d("pic", viewManager.getCurrent().toString());
 
         CheckableImageView imageView;
         if (convertView == null) {
@@ -88,7 +82,7 @@ public class PhotoGridAdapter extends BaseAdapter {
             }
         });
         File photoFile = new File(parentDirectory, viewManager.get(position).getName());
-        loadBitmap(photoFile, imageView);
+        BitmapWorkerTask.loadBitmap(photoFile, imageView);
         return imageView;
     }
 
@@ -101,67 +95,6 @@ public class PhotoGridAdapter extends BaseAdapter {
 
     private void remove(LatLngNamePair pair) {
         viewManager.remove(pair);
-    }
-
-    private void loadBitmap(File image, ImageView view) {
-        BitmapWorkerTask task = new BitmapWorkerTask(view);
-        task.execute(image);
-    }
-
-    private static Bitmap decodeSampledBitmapFromBitmapResource
-            (File file, int reqWidth, int reqHeight) {
-
-        final BitmapFactory.Options options = new BitmapFactory.Options();
-        options.inJustDecodeBounds = true;
-        BitmapFactory.decodeFile(file.getPath(), options);
-
-        options.inSampleSize = calculateInSampleSize(options, reqWidth, reqHeight);
-
-        options.inJustDecodeBounds = false;
-        return BitmapFactory.decodeFile(file.getPath(), options);
-    }
-
-    private static int calculateInSampleSize(
-            BitmapFactory.Options options, int reqWidth, int reqHeight) {
-        final int height = options.outHeight;
-        final int width = options.outWidth;
-        int inSampleSize = 1;
-
-        if (height > reqHeight || width > reqWidth) {
-            final int halfHeight = height / 2;
-            final int halfWidth = width / 2;
-
-            while (halfHeight / inSampleSize > reqHeight &&
-                    halfWidth / inSampleSize > reqWidth) {
-                inSampleSize *= 2;
-            }
-        }
-        return inSampleSize;
-    }
-
-    @SuppressLint("StaticFieldLeak")
-    class BitmapWorkerTask extends AsyncTask<File, Void, Bitmap> {
-        private WeakReference<ImageView> imageViewWeakReference;
-
-        BitmapWorkerTask(ImageView view) {
-            imageViewWeakReference = new WeakReference<>(view);
-        }
-
-        @Override
-        protected Bitmap doInBackground(File... files) {
-            File file = files[0];
-            return decodeSampledBitmapFromBitmapResource(file,
-                    R.dimen.grid_image_size, R.dimen.grid_image_size);
-        }
-
-        @Override
-        protected void onPostExecute(Bitmap bitmap) {
-            if (imageViewWeakReference != null && bitmap != null) {
-                final  ImageView imageView = imageViewWeakReference.get();
-                if (imageView != null)
-                    imageView.setImageBitmap(bitmap);
-            }
-        }
     }
 
     class CheckableImageView extends android.support.v7.widget.AppCompatImageView
